@@ -1,0 +1,56 @@
+{
+  "trading": {
+    "quoteAsset": "USDT",
+    "budgetPerTrade": 100,
+    "maxOpenPositions": 5,
+    "gasReserve": 3,
+    "approvalTimeoutMin": 30,
+    "manualApproval": true,
+    "autoExecute": true,
+    "splitEntry": {
+      "enabled": true,
+      "portion1Pct": 55,
+      "portion2Pct": 45
+    }
+  },
+  "whitelist": [],
+  "screening": {
+    "minVolume24h": 5000000,
+    "utbot": {
+      "enabled": true,
+      "keyValue": 2,
+      "atrPeriod": 10,
+      "timeframe": "4h",
+      "checkIntervalMin": 240,
+      "minVolume24h": 5000000,
+      "maxSignalsPerRun": 10
+    }
+  },
+  "management": {
+    "stopLossPct": -5,
+    "slBuffer": 0.005,
+    "minRiskReward": 2,
+    "trailingStop": {
+      "enabled": true,
+      "activateAfterTP1": true,
+      "activateAtProfitPct": 4,
+      "trailPct": 2
+    },
+    "maxHoldHours": 120,
+    "takeProfitPct": 8
+  },
+  "schedule": {
+    "managementIntervalMin": 10
+  },
+  "blacklist": [
+    "USDCUSDT", "BUSDUSDT", "TUSDUSDT", "USDTUSDT", "DAIUSDT",
+    "FRAXUSDT", "USDPUSDT", "GUSDUSDT", "LUSDUSDT", "MUSDUSDT",
+    "CUSDUSDT", "EUSDUSDT", "USDGOUSDT", "USDDUSDT", "USDEUSDT",
+    "USDXUSDT", "SUSDUSDT", "USDSUSDT", "AUSDUSDT", "RUSDUSDT",
+    "DUSDUSDT", "USDKUSDT", "PYUSDUSDT", "FDUSDUSDT", "AEUSDUSDT",
+    "USDBUSDT", "USDNUSDT", "EURCUSDT", "EURSUSDT", "EURTUSDT",
+    "GBPTUSDT", "FRXETHUSDT", "CBETHUSDT", "STETHUSDT", "WSTETHUSDT",
+    "RETHUSDT", "SWETHUSDT", "BETHUSDT", "ANKRETHUSDT",
+    "WBTCUSDT", "BTCBUSDT", "HBTCUSDT", "RENBTCUSDT"
+  ]
+}
