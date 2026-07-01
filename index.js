@@ -45,12 +45,16 @@ let _cronTasks  = [];
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
-function intervalToCron(minutes) {
+function intervalToCron(minutes, offsetMin = 0) {
   if (minutes <= 0) minutes = 240;
+
+  // Offset cuma masuk akal kalau interval >= 60 menit (align ke jam candle close)
   if (minutes < 60) return `*/${minutes} * * * *`;
-  if (minutes === 60) return `0 * * * *`;
+
+  if (minutes === 60) return `${offsetMin} * * * *`;
+
   const hours = Math.floor(minutes / 60);
-  return `0 */${hours} * * *`;
+  return `${offsetMin} */${hours} * * *`;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -139,12 +143,20 @@ export async function doUTBotScreener() {
     const buySignals  = signals.filter(s => s.signal === 'BUY');
     const sellSignals = signals.filter(s => s.signal === 'SELL');
 
-    // ── Proses SELL signal (hanya notifikasi, manager yang handle exit) ────
-    if (sellSignals.length > 0) {
-      log('utbot', `  ${sellSignals.length} SELL signal → kirim notifikasi`);
-      await notifyUTBotSell(sellSignals);
-    }
+    // ── Proses SELL signal (hanya notifikasi utk yang punya posisi terbuka) ─
+if (sellSignals.length > 0) {
+  const sellWithPosition = sellSignals.filter(s => s.hasPosition);
+  const sellNoPosition   = sellSignals.filter(s => !s.hasPosition);
 
+  if (sellNoPosition.length > 0) {
+    log('utbot', `  Skip ${sellNoPosition.length} SELL (tidak ada posisi): ${sellNoPosition.map(s => s.symbol).join(', ')}`);
+  }
+
+  if (sellWithPosition.length > 0) {
+    log('utbot', `  ${sellWithPosition.length} SELL signal (posisi terbuka) → kirim notifikasi`);
+    await notifyUTBotSell(sellWithPosition);
+  }
+}
     // ── Proses BUY signal ─────────────────────────────────────────────────
     if (buySignals.length > 0) {
       const eligible = buySignals.filter(s => !s.hasPosition);
@@ -226,8 +238,10 @@ function startCron() {
   const manageMin = config.schedule?.managementIntervalMin    ?? 10;
   const utbotMin  = config.screening?.utbot?.checkIntervalMin ?? 240;
 
+  const UTBOT_OFFSET_MIN = 5; // jalankan 5 menit setelah candle 4H close, biar data settle dulu
+
   const cronManage = intervalToCron(manageMin);
-  const cronUtbot  = intervalToCron(utbotMin);
+  const cronUtbot  = intervalToCron(utbotMin, UTBOT_OFFSET_MIN);
 
   log('cron', `Cron aktif:`);
   log('cron', `  UTBot 4H  : ${cronUtbot} → setiap ${utbotMin} menit`);
@@ -235,7 +249,7 @@ function startCron() {
 
   const manageTask = cron.schedule(cronManage, doManagement);
   const utbotTask  = cron.schedule(cronUtbot, () => {
-    log('cron', `📡 UTBot 4H screening (setiap ${utbotMin} menit)`);
+    log('cron', `  UTBot 4H  : ${cronUtbot} → setiap ${utbotMin} menit (offset +${UTBOT_OFFSET_MIN}m setelah candle close)`);
     doUTBotScreener();
   });
 

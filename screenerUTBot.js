@@ -26,14 +26,15 @@ function signalKey(symbol, signal, tf, timestamp) {
 async function scanSymbol4H(symbol, cfg, _retry = 0) {
   const { keyValue, atrPeriod } = cfg;
   const MAX_RETRY = 2;
-  const TF        = '4H';
+  const TF        = '4H';       // label tampilan (dipakai di log & hasil)
+  const API_TF    = '4h';       // ⬅ TAMBAHKAN INI — param valid utk Bitget API
   const periodMs  = 14400000; // 4 jam
 
   try {
-    const candleLimit = Math.max(atrPeriod * 3 + 20, 60);
-    const raw         = await getCandles(symbol, TF, candleLimit);
+    const candleLimit = Math.max(atrPeriod * 8, 80); // atrPeriod=10 → 80 candle ≈ 13 hari
+    const raw         = await getCandles(symbol, API_TF, candleLimit);  // ⬅ ganti TF → API_TF
     if (!Array.isArray(raw) || raw.length < atrPeriod + 10) return null;
-
+    // ... sisanya tetap sama, TF tetap dipakai untuk timeframe: TF, signalKey, dll
     const now         = Date.now();
     const periodStart = now - (now % periodMs);
     const closed      = raw

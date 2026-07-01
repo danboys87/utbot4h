@@ -76,22 +76,26 @@ async function main() {
 
   const signals = new Array(closes.length).fill(null);
 
-  for (let i = startIdx + 1; i < closes.length; i++) {
-    const atr = atrArr[i];
-    if (!atr) { stops[i] = stops[i - 1]; continue; }
+ for (let i = startIdx + 1; i < closes.length; i++) {
+  const atr = atrArr[i];
+  if (!atr) { stops[i] = stops[i - 1]; continue; }
 
-    const nLoss    = atr * keyValue;
-    const close    = closes[i];
-    const prevStop = stops[i - 1] ?? (close - nLoss);
-    const prevClose = closes[i - 1];
+  const nLoss     = atr * keyValue;
+  const close     = closes[i];
+  const prevClose = closes[i - 1];
+  const prevStop  = stops[i - 1] ?? (close - nLoss);
 
-    stops[i] = close > prevStop
-      ? Math.max(prevStop, close - nLoss)
-      : Math.min(prevStop, close + nLoss);
-
-    if (prevClose <= prevStop && close > stops[i]) signals[i] = 'BUY';
-    if (prevClose >= prevStop && close < stops[i]) signals[i] = 'SELL';
+  if (close > prevStop && prevClose > prevStop) {
+    stops[i] = Math.max(prevStop, close - nLoss);
+  } else if (close < prevStop && prevClose < prevStop) {
+    stops[i] = Math.min(prevStop, close + nLoss);
+  } else {
+    stops[i] = close > prevStop ? close - nLoss : close + nLoss;
   }
+
+  if (prevClose <= prevStop && close > stops[i]) signals[i] = 'BUY';
+  if (prevClose >= prevStop && close < stops[i]) signals[i] = 'SELL';
+}
 
   console.log(`Timestamp         Close       TrailingStop   ATR          Signal`);
   console.log('─'.repeat(78));

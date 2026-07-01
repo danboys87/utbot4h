@@ -1,0 +1,178 @@
+[2026-07-01T10:43:44.974Z] [STARTUP     ] 🧪 DRY RUN mode - API connection skipped
+[2026-07-01T10:43:44.975Z] [STARTUP     ] Config:
+[2026-07-01T10:43:44.975Z] [STARTUP     ]   Budget/trade : 100 USDT
+[2026-07-01T10:43:44.975Z] [STARTUP     ]   Entry mode   : 🤖 AUTO EXECUTE (100%)
+[2026-07-01T10:43:44.975Z] [STARTUP     ]   Max posisi   : 5
+[2026-07-01T10:43:44.975Z] [STARTUP     ]   UTBot key    : 2
+[2026-07-01T10:43:44.975Z] [STARTUP     ]   UTBot ATR    : 10
+[2026-07-01T10:43:44.975Z] [STARTUP     ] Jadwal:
+[2026-07-01T10:43:44.975Z] [STARTUP     ]   UTBot 4H   : setiap 240 menit
+[2026-07-01T10:43:44.975Z] [STARTUP     ]   Management : setiap 10 menit
+[2026-07-01T10:43:45.501Z] [STATE       ] 💾 State dari lokal: 0 posisi terbuka
+[2026-07-01T10:43:45.501Z] [SYMBOL_FILTER] Memuat daftar symbol crypto spot dari Bitget...
+[2026-07-01T10:43:45.865Z] [SYMBOL_FILTER] ✅ Symbol cache updated: 611 crypto spot, 564 non-crypto (tokenized/RWA) difilter
+[2026-07-01T10:43:45.866Z] [STARTUP     ] Menjalankan management cycle pertama...
+[2026-07-01T10:43:45.866Z] [MANAGER     ] Tidak ada posisi terbuka
+[2026-07-01T10:43:45.866Z] [TELEGRAM    ] Polling dihentikan
+[2026-07-01T10:43:45.866Z] [CRON        ] Cron aktif:
+[2026-07-01T10:43:45.867Z] [CRON        ]   UTBot 4H  : 0 */4 * * * → setiap 240 menit
+[2026-07-01T10:43:45.867Z] [CRON        ]   Management: */10 * * * * → setiap 10 menit
+[2026-07-01T10:43:45.871Z] [TELEGRAM    ] Telegram tidak dikonfigurasi
+[2026-07-01T10:43:45.881Z] [API_SERVER  ] ✅ Dashboard API berjalan di http://localhost:3000
+[2026-07-01T10:43:45.881Z] [API_SERVER  ]    Buka dashboard.html di browser dan set API URL ke http://localhost:3000
+[2026-07-01T10:44:02.774Z] [SCREENER    ] 📡 Menjalankan UT Bot Alert Screener (4H)...
+[2026-07-01T10:44:02.889Z] [UTBOT       ] ══ UT Bot Alert Screener (4H | key=2 atr=10 | mode=all) ══
+[2026-07-01T10:44:02.889Z] [SYMBOL_FILTER] Filter: 1175 → 611 ticker (564 non-crypto dibuang)
+[2026-07-01T10:44:02.890Z] [UTBOT       ] Scanning 12 koin (4H)...
+[2026-07-01T10:44:02.969Z] [UTBOT_ERROR ] Scan DOGEUSDT [4H]: Bitget HTTP 400: {"code":"400171","msg":"Parameter verification failed k-line time range  should be [1min,3min,5min,15min,30min,1h,4h,6h,12h,1day,1week,1M,6Hutc,12Hutc,1Dutc,3Dutc,1Wutc,1Mutc]","requestTime":1782902642957,"data":null}
+[2026-07-01T10:44:03.345Z] [UTBOT_ERROR ] Scan XRPUSDT [4H]: Bitget HTTP 400: {"code":"400171","msg":"Parameter verification failed k-line time range  should be [1min,3min,5min,15min,30min,1h,4h,6h,12h,1day,1week,1M,6Hutc,12Hutc,1Dutc,3Dutc,1Wutc,1Mutc]","requestTime":1782902643334,"data":null}
+[2026-07-01T10:44:03.726Z] [UTBOT_ERROR ] Scan BTCUSDT [4H]: Bitget HTTP 400: {"code":"400171","msg":"Parameter verification failed k-line time range  should be [1min,3min,5min,15min,30min,1h,4h,6h,12h,1day,1week,1M,6Hutc,12Hutc,1Dutc,3Dutc,1Wutc,1Mutc]","requestTime":1782902643711,"data":null}
+[2026-07-01T10:44:04.106Z] [UTBOT_ERROR ] Scan ETHUSDT [4H]: Bitget HTTP 400: {"code":"400171","msg":"Parameter verification failed k-line time range  should be [1min,3min,5min,15min,30min,1h,4h,6h,12h,1day,1week,1M,6Hutc,12Hutc,1Dutc,3Dutc,1Wutc,1Mutc]","requestTime":1782902644093,"data":null}
+[2026-07-01T10:44:04.485Z] [UTBOT_ERROR ] Scan SOLUSDT [4H]: Bitget HTTP 400: {"code":"400171","msg":"Parameter verification failed k-line time range  should be [1min,3min,5min,15min,30min,1h,4h,6h,12h,1day,1week,1M,6Hutc,12Hutc,1Dutc,3Dutc,1Wutc,1Mutc]","requestTime":1782902644472,"data":null}
+[2026-07-01T10:44:05.362Z] [UTBOT_ERROR ] Scan BGBUSDT [4H]: Bitget HTTP 400: {"code":"400171","msg":"Parameter verification failed k-line time range  should be [1min,3min,5min,15min,30min,1h,4h,6h,12h,1day,1week,1M,6Hutc,12Hutc,1Dutc,3Dutc,1Wutc,1Mutc]","requestTime":1782902645349,"data":null}
+[2026-07-01T10:44:05.739Z] [UTBOT_ERROR ] Scan XAUTUSDT [4H]: Bitget HTTP 400: {"code":"400171","msg":"Parameter verification failed k-line time range  should be [1min,3min,5min,15min,30min,1h,4h,6h,12h,1day,1week,1M,6Hutc,12Hutc,1Dutc,3Dutc,1Wutc,1Mutc]","requestTime":1782902645728,"data":null}
+[2026-07-01T10:44:06.119Z] [UTBOT_ERROR ] Scan HYPEUSDT [4H]: Bitget HTTP 400: {"code":"400171","msg":"Parameter verification failed k-line time range  should be [1min,3min,5min,15min,30min,1h,4h,6h,12h,1day,1week,1M,6Hutc,12Hutc,1Dutc,3Dutc,1Wutc,1Mutc]","requestTime":1782902646105,"data":null}
+[2026-07-01T10:44:06.500Z] [UTBOT_ERROR ] Scan INUSDT [4H]: Bitget HTTP 400: {"code":"400171","msg":"Parameter verification failed k-line time range  should be [1min,3min,5min,15min,30min,1h,4h,6h,12h,1day,1week,1M,6Hutc,12Hutc,1Dutc,3Dutc,1Wutc,1Mutc]","requestTime":1782902646486,"data":null}
+[2026-07-01T10:44:06.876Z] [UTBOT_ERROR ] Scan LABUSDT [4H]: Bitget HTTP 400: {"code":"400171","msg":"Parameter verification failed k-line time range  should be [1min,3min,5min,15min,30min,1h,4h,6h,12h,1day,1week,1M,6Hutc,12Hutc,1Dutc,3Dutc,1Wutc,1Mutc]","requestTime":1782902646865,"data":null}
+[2026-07-01T10:44:08.455Z] [UTBOT_ERROR ] Scan UMXMUSDT [4H]: Bitget HTTP 400: {"code":"400171","msg":"Parameter verification failed k-line time range  should be [1min,3min,5min,15min,30min,1h,4h,6h,12h,1day,1week,1M,6Hutc,12Hutc,1Dutc,3Dutc,1Wutc,1Mutc]","requestTime":1782902648444,"data":null}
+[2026-07-01T10:44:08.836Z] [UTBOT_ERROR ] Scan SLXUSDT [4H]: Bitget HTTP 400: {"code":"400171","msg":"Parameter verification failed k-line time range  should be [1min,3min,5min,15min,30min,1h,4h,6h,12h,1day,1week,1M,6Hutc,12Hutc,1Dutc,3Dutc,1Wutc,1Mutc]","requestTime":1782902648823,"data":null}
+[2026-07-01T10:44:09.136Z] [UTBOT       ] UT Bot selesai → 0 BUY, 0 SELL signal
+[2026-07-01T10:44:09.137Z] [UTBOT       ]   Tidak ada sinyal UTBot saat ini
+[2026-07-01T10:49:21.467Z] [TELEGRAM    ] Polling dihentikan
+[2026-07-01T10:49:25.039Z] [STARTUP     ] 🧪 DRY RUN mode - API connection skipped
+[2026-07-01T10:49:25.040Z] [STARTUP     ] Config:
+[2026-07-01T10:49:25.040Z] [STARTUP     ]   Budget/trade : 100 USDT
+[2026-07-01T10:49:25.040Z] [STARTUP     ]   Entry mode   : 🤖 AUTO EXECUTE (100%)
+[2026-07-01T10:49:25.041Z] [STARTUP     ]   Max posisi   : 5
+[2026-07-01T10:49:25.041Z] [STARTUP     ]   UTBot key    : 2
+[2026-07-01T10:49:25.041Z] [STARTUP     ]   UTBot ATR    : 10
+[2026-07-01T10:49:25.041Z] [STARTUP     ] Jadwal:
+[2026-07-01T10:49:25.041Z] [STARTUP     ]   UTBot 4H   : setiap 240 menit
+[2026-07-01T10:49:25.041Z] [STARTUP     ]   Management : setiap 10 menit
+[2026-07-01T10:49:25.058Z] [STATE       ] 💾 State dari lokal: 0 posisi terbuka
+[2026-07-01T10:49:25.058Z] [SYMBOL_FILTER] Memuat daftar symbol crypto spot dari Bitget...
+[2026-07-01T10:49:25.312Z] [SYMBOL_FILTER] ✅ Symbol cache updated: 611 crypto spot, 564 non-crypto (tokenized/RWA) difilter
+[2026-07-01T10:49:25.312Z] [STARTUP     ] Menjalankan management cycle pertama...
+[2026-07-01T10:49:25.312Z] [MANAGER     ] Tidak ada posisi terbuka
+[2026-07-01T10:49:25.312Z] [TELEGRAM    ] Polling dihentikan
+[2026-07-01T10:49:25.312Z] [CRON        ] Cron aktif:
+[2026-07-01T10:49:25.312Z] [CRON        ]   UTBot 4H  : 0 */4 * * * → setiap 240 menit
+[2026-07-01T10:49:25.313Z] [CRON        ]   Management: */10 * * * * → setiap 10 menit
+[2026-07-01T10:49:25.316Z] [TELEGRAM    ] Telegram tidak dikonfigurasi
+[2026-07-01T10:49:25.321Z] [API_SERVER  ] ✅ Dashboard API berjalan di http://localhost:3000
+[2026-07-01T10:49:25.321Z] [API_SERVER  ]    Buka dashboard.html di browser dan set API URL ke http://localhost:3000
+[2026-07-01T10:49:40.388Z] [SCREENER    ] 📡 Menjalankan UT Bot Alert Screener (4H)...
+[2026-07-01T10:49:40.533Z] [UTBOT       ] ══ UT Bot Alert Screener (4H | key=2 atr=10 | mode=all) ══
+[2026-07-01T10:49:40.533Z] [SYMBOL_FILTER] Filter: 1175 → 611 ticker (564 non-crypto dibuang)
+[2026-07-01T10:49:40.534Z] [UTBOT       ] Scanning 12 koin (4H)...
+[2026-07-01T10:49:40.618Z] [UTBOT_ERROR ] Scan DOGEUSDT [4H]: Bitget HTTP 400: {"code":"400171","msg":"Parameter verification failed k-line time range  should be [1min,3min,5min,15min,30min,1h,4h,6h,12h,1day,1week,1M,6Hutc,12Hutc,1Dutc,3Dutc,1Wutc,1Mutc]","requestTime":1782902980609,"data":null}
+[2026-07-01T10:49:41.008Z] [UTBOT_ERROR ] Scan XRPUSDT [4H]: Bitget HTTP 400: {"code":"400171","msg":"Parameter verification failed k-line time range  should be [1min,3min,5min,15min,30min,1h,4h,6h,12h,1day,1week,1M,6Hutc,12Hutc,1Dutc,3Dutc,1Wutc,1Mutc]","requestTime":1782902981000,"data":null}
+[2026-07-01T10:49:41.391Z] [UTBOT_ERROR ] Scan BTCUSDT [4H]: Bitget HTTP 400: {"code":"400171","msg":"Parameter verification failed k-line time range  should be [1min,3min,5min,15min,30min,1h,4h,6h,12h,1day,1week,1M,6Hutc,12Hutc,1Dutc,3Dutc,1Wutc,1Mutc]","requestTime":1782902981382,"data":null}
+[2026-07-01T10:49:41.771Z] [UTBOT_ERROR ] Scan ETHUSDT [4H]: Bitget HTTP 400: {"code":"400171","msg":"Parameter verification failed k-line time range  should be [1min,3min,5min,15min,30min,1h,4h,6h,12h,1day,1week,1M,6Hutc,12Hutc,1Dutc,3Dutc,1Wutc,1Mutc]","requestTime":1782902981764,"data":null}
+[2026-07-01T10:49:42.154Z] [UTBOT_ERROR ] Scan SOLUSDT [4H]: Bitget HTTP 400: {"code":"400171","msg":"Parameter verification failed k-line time range  should be [1min,3min,5min,15min,30min,1h,4h,6h,12h,1day,1week,1M,6Hutc,12Hutc,1Dutc,3Dutc,1Wutc,1Mutc]","requestTime":1782902982146,"data":null}
+[2026-07-01T10:49:43.040Z] [UTBOT_ERROR ] Scan BGBUSDT [4H]: Bitget HTTP 400: {"code":"400171","msg":"Parameter verification failed k-line time range  should be [1min,3min,5min,15min,30min,1h,4h,6h,12h,1day,1week,1M,6Hutc,12Hutc,1Dutc,3Dutc,1Wutc,1Mutc]","requestTime":1782902983032,"data":null}
+[2026-07-01T10:49:43.422Z] [UTBOT_ERROR ] Scan XAUTUSDT [4H]: Bitget HTTP 400: {"code":"400171","msg":"Parameter verification failed k-line time range  should be [1min,3min,5min,15min,30min,1h,4h,6h,12h,1day,1week,1M,6Hutc,12Hutc,1Dutc,3Dutc,1Wutc,1Mutc]","requestTime":1782902983414,"data":null}
+[2026-07-01T10:49:43.804Z] [UTBOT_ERROR ] Scan HYPEUSDT [4H]: Bitget HTTP 400: {"code":"400171","msg":"Parameter verification failed k-line time range  should be [1min,3min,5min,15min,30min,1h,4h,6h,12h,1day,1week,1M,6Hutc,12Hutc,1Dutc,3Dutc,1Wutc,1Mutc]","requestTime":1782902983797,"data":null}
+[2026-07-01T10:49:44.189Z] [UTBOT_ERROR ] Scan INUSDT [4H]: Bitget HTTP 400: {"code":"400171","msg":"Parameter verification failed k-line time range  should be [1min,3min,5min,15min,30min,1h,4h,6h,12h,1day,1week,1M,6Hutc,12Hutc,1Dutc,3Dutc,1Wutc,1Mutc]","requestTime":1782902984181,"data":null}
+[2026-07-01T10:49:44.570Z] [UTBOT_ERROR ] Scan LABUSDT [4H]: Bitget HTTP 400: {"code":"400171","msg":"Parameter verification failed k-line time range  should be [1min,3min,5min,15min,30min,1h,4h,6h,12h,1day,1week,1M,6Hutc,12Hutc,1Dutc,3Dutc,1Wutc,1Mutc]","requestTime":1782902984562,"data":null}
+[2026-07-01T10:49:46.151Z] [UTBOT_ERROR ] Scan UMXMUSDT [4H]: Bitget HTTP 400: {"code":"400171","msg":"Parameter verification failed k-line time range  should be [1min,3min,5min,15min,30min,1h,4h,6h,12h,1day,1week,1M,6Hutc,12Hutc,1Dutc,3Dutc,1Wutc,1Mutc]","requestTime":1782902986144,"data":null}
+[2026-07-01T10:49:46.530Z] [UTBOT_ERROR ] Scan SLXUSDT [4H]: Bitget HTTP 400: {"code":"400171","msg":"Parameter verification failed k-line time range  should be [1min,3min,5min,15min,30min,1h,4h,6h,12h,1day,1week,1M,6Hutc,12Hutc,1Dutc,3Dutc,1Wutc,1Mutc]","requestTime":1782902986523,"data":null}
+[2026-07-01T10:49:46.831Z] [UTBOT       ] UT Bot selesai → 0 BUY, 0 SELL signal
+[2026-07-01T10:49:46.831Z] [UTBOT       ]   Tidak ada sinyal UTBot saat ini
+[2026-07-01T10:50:00.350Z] [MANAGER     ] Tidak ada posisi terbuka
+[2026-07-01T10:53:09.856Z] [TELEGRAM    ] Polling dihentikan
+[2026-07-01T10:53:12.544Z] [STARTUP     ] 🧪 DRY RUN mode - API connection skipped
+[2026-07-01T10:53:12.545Z] [STARTUP     ] Config:
+[2026-07-01T10:53:12.545Z] [STARTUP     ]   Budget/trade : 100 USDT
+[2026-07-01T10:53:12.545Z] [STARTUP     ]   Entry mode   : 🤖 AUTO EXECUTE (100%)
+[2026-07-01T10:53:12.545Z] [STARTUP     ]   Max posisi   : 5
+[2026-07-01T10:53:12.545Z] [STARTUP     ]   UTBot key    : 2
+[2026-07-01T10:53:12.546Z] [STARTUP     ]   UTBot ATR    : 10
+[2026-07-01T10:53:12.546Z] [STARTUP     ] Jadwal:
+[2026-07-01T10:53:12.546Z] [STARTUP     ]   UTBot 4H   : setiap 240 menit
+[2026-07-01T10:53:12.546Z] [STARTUP     ]   Management : setiap 10 menit
+[2026-07-01T10:53:12.563Z] [STATE       ] 💾 State dari lokal: 0 posisi terbuka
+[2026-07-01T10:53:12.563Z] [SYMBOL_FILTER] Memuat daftar symbol crypto spot dari Bitget...
+[2026-07-01T10:53:12.771Z] [SYMBOL_FILTER] ✅ Symbol cache updated: 611 crypto spot, 564 non-crypto (tokenized/RWA) difilter
+[2026-07-01T10:53:12.771Z] [STARTUP     ] Menjalankan management cycle pertama...
+[2026-07-01T10:53:12.772Z] [MANAGER     ] Tidak ada posisi terbuka
+[2026-07-01T10:53:12.772Z] [TELEGRAM    ] Polling dihentikan
+[2026-07-01T10:53:12.773Z] [CRON        ] Cron aktif:
+[2026-07-01T10:53:12.773Z] [CRON        ]   UTBot 4H  : 0 */4 * * * → setiap 240 menit
+[2026-07-01T10:53:12.773Z] [CRON        ]   Management: */10 * * * * → setiap 10 menit
+[2026-07-01T10:53:12.777Z] [TELEGRAM    ] Telegram tidak dikonfigurasi
+[2026-07-01T10:53:12.787Z] [API_SERVER  ] ✅ Dashboard API berjalan di http://localhost:3000
+[2026-07-01T10:53:12.788Z] [API_SERVER  ]    Buka dashboard.html di browser dan set API URL ke http://localhost:3000
+[2026-07-01T10:53:24.922Z] [SCREENER    ] 📡 Menjalankan UT Bot Alert Screener (4H)...
+[2026-07-01T10:53:25.037Z] [UTBOT       ] ══ UT Bot Alert Screener (4H | key=2 atr=10 | mode=all) ══
+[2026-07-01T10:53:25.037Z] [SYMBOL_FILTER] Filter: 1175 → 611 ticker (564 non-crypto dibuang)
+[2026-07-01T10:53:25.038Z] [UTBOT       ] Scanning 12 koin (4H)...
+[2026-07-01T10:53:31.368Z] [UTBOT       ] UT Bot selesai → 0 BUY, 0 SELL signal
+[2026-07-01T10:53:31.368Z] [UTBOT       ]   Tidak ada sinyal UTBot saat ini
+[2026-07-01T11:00:00.201Z] [MANAGER     ] Tidak ada posisi terbuka
+[2026-07-01T11:10:00.810Z] [MANAGER     ] Tidak ada posisi terbuka
+[2026-07-01T11:20:00.425Z] [MANAGER     ] Tidak ada posisi terbuka
+[2026-07-01T11:30:00.049Z] [MANAGER     ] Tidak ada posisi terbuka
+[2026-07-01T11:40:00.662Z] [MANAGER     ] Tidak ada posisi terbuka
+[2026-07-01T11:50:00.286Z] [MANAGER     ] Tidak ada posisi terbuka
+[2026-07-01T12:00:00.892Z] [MANAGER     ] Tidak ada posisi terbuka
+[2026-07-01T12:00:00.893Z] [CRON        ] 📡 UTBot 4H screening (setiap 240 menit)
+[2026-07-01T12:00:00.893Z] [SCREENER    ] 📡 Menjalankan UT Bot Alert Screener (4H)...
+[2026-07-01T12:00:01.228Z] [UTBOT       ] ══ UT Bot Alert Screener (4H | key=2 atr=10 | mode=all) ══
+[2026-07-01T12:00:01.229Z] [SYMBOL_FILTER] Filter: 1175 → 611 ticker (564 non-crypto dibuang)
+[2026-07-01T12:00:01.229Z] [UTBOT       ] Scanning 12 koin (4H)...
+[2026-07-01T12:00:04.521Z] [UTBOT       ]   🔴 SELL [4H]: HYPEUSDT @ 62.719 | TS=66.355367
+[2026-07-01T12:00:07.584Z] [UTBOT       ] UT Bot selesai → 0 BUY, 1 SELL signal
+[2026-07-01T12:00:07.584Z] [UTBOT       ]   1 SELL signal → kirim notifikasi
+[2026-07-01T12:10:00.513Z] [MANAGER     ] Tidak ada posisi terbuka
+[2026-07-01T12:20:00.130Z] [MANAGER     ] Tidak ada posisi terbuka
+[2026-07-01T12:30:00.725Z] [MANAGER     ] Tidak ada posisi terbuka
+[2026-07-01T12:40:00.348Z] [MANAGER     ] Tidak ada posisi terbuka
+[2026-07-01T12:50:00.976Z] [MANAGER     ] Tidak ada posisi terbuka
+[2026-07-01T13:00:00.595Z] [MANAGER     ] Tidak ada posisi terbuka
+[2026-07-01T13:05:31.261Z] [TELEGRAM    ] Polling dihentikan
+[2026-07-01T13:05:36.006Z] [STARTUP     ] 🧪 DRY RUN mode - API connection skipped
+[2026-07-01T13:05:36.007Z] [STARTUP     ] Config:
+[2026-07-01T13:05:36.007Z] [STARTUP     ]   Budget/trade : 100 USDT
+[2026-07-01T13:05:36.007Z] [STARTUP     ]   Entry mode   : 🤖 AUTO EXECUTE (100%)
+[2026-07-01T13:05:36.008Z] [STARTUP     ]   Max posisi   : 5
+[2026-07-01T13:05:36.008Z] [STARTUP     ]   UTBot key    : 2
+[2026-07-01T13:05:36.008Z] [STARTUP     ]   UTBot ATR    : 10
+[2026-07-01T13:05:36.008Z] [STARTUP     ] Jadwal:
+[2026-07-01T13:05:36.009Z] [STARTUP     ]   UTBot 4H   : setiap 240 menit
+[2026-07-01T13:05:36.009Z] [STARTUP     ]   Management : setiap 10 menit
+[2026-07-01T13:05:36.032Z] [STATE       ] 💾 State dari lokal: 0 posisi terbuka
+[2026-07-01T13:05:36.033Z] [SYMBOL_FILTER] Memuat daftar symbol crypto spot dari Bitget...
+[2026-07-01T13:05:36.268Z] [SYMBOL_FILTER] ✅ Symbol cache updated: 611 crypto spot, 564 non-crypto (tokenized/RWA) difilter
+[2026-07-01T13:05:36.269Z] [STARTUP     ] Menjalankan management cycle pertama...
+[2026-07-01T13:05:36.269Z] [MANAGER     ] Tidak ada posisi terbuka
+[2026-07-01T13:05:36.269Z] [TELEGRAM    ] Polling dihentikan
+[2026-07-01T13:05:36.269Z] [CRON        ] Cron aktif:
+[2026-07-01T13:05:36.270Z] [CRON        ]   UTBot 4H  : 5 */4 * * * → setiap 240 menit
+[2026-07-01T13:05:36.270Z] [CRON        ]   Management: */10 * * * * → setiap 10 menit
+[2026-07-01T13:05:36.274Z] [TELEGRAM    ] Telegram tidak dikonfigurasi
+[2026-07-01T13:05:36.280Z] [API_SERVER  ] ✅ Dashboard API berjalan di http://localhost:3000
+[2026-07-01T13:05:36.281Z] [API_SERVER  ]    Buka dashboard.html di browser dan set API URL ke http://localhost:3000
+[2026-07-01T13:06:17.262Z] [TELEGRAM    ] Polling dihentikan
+[2026-07-01T13:06:20.394Z] [STARTUP     ] 🧪 DRY RUN mode - API connection skipped
+[2026-07-01T13:06:20.395Z] [STARTUP     ] Config:
+[2026-07-01T13:06:20.396Z] [STARTUP     ]   Budget/trade : 100 USDT
+[2026-07-01T13:06:20.396Z] [STARTUP     ]   Entry mode   : 🤖 AUTO EXECUTE (100%)
+[2026-07-01T13:06:20.396Z] [STARTUP     ]   Max posisi   : 5
+[2026-07-01T13:06:20.397Z] [STARTUP     ]   UTBot key    : 2
+[2026-07-01T13:06:20.397Z] [STARTUP     ]   UTBot ATR    : 10
+[2026-07-01T13:06:20.397Z] [STARTUP     ] Jadwal:
+[2026-07-01T13:06:20.397Z] [STARTUP     ]   UTBot 4H   : setiap 240 menit
+[2026-07-01T13:06:20.397Z] [STARTUP     ]   Management : setiap 10 menit
+[2026-07-01T13:06:20.420Z] [STATE       ] 💾 State dari lokal: 0 posisi terbuka
+[2026-07-01T13:06:20.420Z] [SYMBOL_FILTER] Memuat daftar symbol crypto spot dari Bitget...
+[2026-07-01T13:06:20.577Z] [SYMBOL_FILTER] ✅ Symbol cache updated: 611 crypto spot, 564 non-crypto (tokenized/RWA) difilter
+[2026-07-01T13:06:20.577Z] [STARTUP     ] Menjalankan management cycle pertama...
+[2026-07-01T13:06:20.578Z] [MANAGER     ] Tidak ada posisi terbuka
+[2026-07-01T13:06:20.578Z] [TELEGRAM    ] Polling dihentikan
+[2026-07-01T13:06:20.579Z] [CRON        ] Cron aktif:
+[2026-07-01T13:06:20.579Z] [CRON        ]   UTBot 4H  : 5 */4 * * * → setiap 240 menit
+[2026-07-01T13:06:20.579Z] [CRON        ]   Management: */10 * * * * → setiap 10 menit
+[2026-07-01T13:06:20.583Z] [TELEGRAM    ] Telegram tidak dikonfigurasi
+[2026-07-01T13:06:20.592Z] [API_SERVER  ] ✅ Dashboard API berjalan di http://localhost:3000
+[2026-07-01T13:06:20.592Z] [API_SERVER  ]    Buka dashboard.html di browser dan set API URL ke http://localhost:3000

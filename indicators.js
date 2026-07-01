@@ -250,17 +250,22 @@ export function calcUTBot(highs, lows, closes, keyValue = 1, atrPeriod = 10) {
   stops[startIdx] = closes[startIdx] - atrArr[startIdx] * keyValue;
 
   for (let i = startIdx + 1; i < closes.length; i++) {
-    const atr = atrArr[i];
-    if (!atr) { stops[i] = stops[i - 1]; continue; }
+  const atr = atrArr[i];
+  if (!atr) { stops[i] = stops[i - 1]; continue; }
 
-    const nLoss    = atr * keyValue;
-    const close    = closes[i];
-    const prevStop = stops[i - 1] ?? (close - nLoss);
+  const nLoss     = atr * keyValue;
+  const close     = closes[i];
+  const prevClose = closes[i - 1];
+  const prevStop  = stops[i - 1] ?? (close - nLoss);
 
-    stops[i] = close > prevStop
-      ? Math.max(prevStop, close - nLoss)
-      : Math.min(prevStop, close + nLoss);
+  if (close > prevStop && prevClose > prevStop) {
+    stops[i] = Math.max(prevStop, close - nLoss);
+  } else if (close < prevStop && prevClose < prevStop) {
+    stops[i] = Math.min(prevStop, close + nLoss);
+  } else {
+    stops[i] = close > prevStop ? close - nLoss : close + nLoss;
   }
+}
 
   const lastIdx  = closes.length - 1;
   const prevIdx  = closes.length - 2;
