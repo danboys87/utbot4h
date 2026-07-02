@@ -1,0 +1,224 @@
+[2026-07-02T09:35:24.209Z] [STARTUP     ] 🧪 DRY RUN mode - API connection skipped
+[2026-07-02T09:35:24.211Z] [STARTUP     ] Config:
+[2026-07-02T09:35:24.211Z] [STARTUP     ]   Budget/trade : 100 USDT
+[2026-07-02T09:35:24.211Z] [STARTUP     ]   Entry mode   : 🤖 AUTO EXECUTE (100%)
+[2026-07-02T09:35:24.211Z] [STARTUP     ]   Max posisi   : 5
+[2026-07-02T09:35:24.211Z] [STARTUP     ]   UTBot key    : 2
+[2026-07-02T09:35:24.212Z] [STARTUP     ]   UTBot ATR    : 10
+[2026-07-02T09:35:24.212Z] [STARTUP     ] Jadwal:
+[2026-07-02T09:35:24.212Z] [STARTUP     ]   UTBot 4H   : setiap 240 menit
+[2026-07-02T09:35:24.212Z] [STARTUP     ]   Management : setiap 10 menit
+[2026-07-02T09:35:24.535Z] [STATE       ] 💾 State dari lokal: 0 posisi terbuka
+[2026-07-02T09:35:24.536Z] [SYMBOL_FILTER] Memuat daftar symbol crypto spot dari Bitget...
+[2026-07-02T09:35:24.779Z] [SYMBOL_FILTER] ✅ Symbol cache updated: 611 crypto spot, 564 non-crypto (tokenized/RWA) difilter
+[2026-07-02T09:35:24.779Z] [STARTUP     ] Menjalankan management cycle pertama...
+[2026-07-02T09:35:24.780Z] [MANAGER     ] Tidak ada posisi terbuka
+[2026-07-02T09:35:24.780Z] [TELEGRAM    ] Polling dihentikan
+[2026-07-02T09:35:24.780Z] [CRON        ] Cron aktif:
+[2026-07-02T09:35:24.781Z] [CRON        ]   UTBot 4H  : 5 */4 * * * → setiap 240 menit
+[2026-07-02T09:35:24.781Z] [CRON        ]   Management: */10 * * * * → setiap 10 menit
+[2026-07-02T09:35:24.785Z] [TELEGRAM    ] Telegram tidak dikonfigurasi
+[2026-07-02T09:35:24.793Z] [API_SERVER  ] ✅ Dashboard API berjalan di http://localhost:3000
+[2026-07-02T09:35:24.793Z] [API_SERVER  ]    Buka dashboard.html di browser dan set API URL ke http://localhost:3000
+[2026-07-02T09:40:00.068Z] [MANAGER     ] Tidak ada posisi terbuka
+[2026-07-02T09:50:00.684Z] [MANAGER     ] Tidak ada posisi terbuka
+[2026-07-02T10:00:00.294Z] [MANAGER     ] Tidak ada posisi terbuka
+[2026-07-02T10:10:00.909Z] [MANAGER     ] Tidak ada posisi terbuka
+[2026-07-02T10:16:36.715Z] [TELEGRAM    ] Polling dihentikan
+[2026-07-02T10:16:39.804Z] [STARTUP     ] 🧪 DRY RUN mode - API connection skipped
+[2026-07-02T10:16:39.805Z] [STARTUP     ] Config:
+[2026-07-02T10:16:39.806Z] [STARTUP     ]   Budget/trade : 100 USDT
+[2026-07-02T10:16:39.807Z] [STARTUP     ]   Entry mode   : 🤖 AUTO EXECUTE (100%)
+[2026-07-02T10:16:39.810Z] [STARTUP     ]   Max posisi   : 5
+[2026-07-02T10:16:39.810Z] [STARTUP     ]   UTBot key    : 2
+[2026-07-02T10:16:39.811Z] [STARTUP     ]   UTBot ATR    : 10
+[2026-07-02T10:16:39.811Z] [STARTUP     ] Jadwal:
+[2026-07-02T10:16:39.811Z] [STARTUP     ]   UTBot 4H   : setiap 240 menit
+[2026-07-02T10:16:39.811Z] [STARTUP     ]   Management : setiap 10 menit
+[2026-07-02T10:16:39.866Z] [STATE       ] 💾 State dari lokal: 0 posisi terbuka
+[2026-07-02T10:16:39.867Z] [SYMBOL_FILTER] Memuat daftar symbol crypto spot dari Bitget...
+[2026-07-02T10:16:40.476Z] [SYMBOL_FILTER] ✅ Symbol cache updated: 611 crypto spot, 564 non-crypto (tokenized/RWA) difilter
+[2026-07-02T10:16:40.477Z] [STARTUP     ] Menjalankan management cycle pertama...
+[2026-07-02T10:16:40.477Z] [MANAGER     ] Tidak ada posisi terbuka
+[2026-07-02T10:16:40.477Z] [TELEGRAM    ] Polling dihentikan
+[2026-07-02T10:16:40.477Z] [CRON        ] Cron aktif:
+[2026-07-02T10:16:40.477Z] [CRON        ]   UTBot 4H  : 5 */4 * * * → setiap 240 menit
+[2026-07-02T10:16:40.478Z] [CRON        ]   Management: */10 * * * * → setiap 10 menit
+[2026-07-02T10:16:40.482Z] [TELEGRAM    ] Telegram tidak dikonfigurasi
+[2026-07-02T10:16:40.490Z] [API_SERVER  ] ✅ Dashboard API berjalan di http://localhost:3000
+[2026-07-02T10:16:40.491Z] [API_SERVER  ]    Buka dashboard.html di browser dan set API URL ke http://localhost:3000
+[2026-07-02T10:16:55.275Z] [SCREENER    ] 📡 Menjalankan UT Bot Alert Screener (4H)...
+[2026-07-02T10:16:55.403Z] [UTBOT       ] ══ UT Bot Alert Screener (4H | key=2 atr=10 | mode=all) ══
+[2026-07-02T10:16:55.404Z] [SYMBOL_FILTER] Filter: 1175 → 611 ticker (564 non-crypto dibuang)
+[2026-07-02T10:16:55.404Z] [UTBOT       ] Scanning 54 koin (4H)...
+[2026-07-02T10:17:15.342Z] [UTBOT       ]   🔴 SELL [4H]: NOMUSDT @ 0.001622 | TS=0.002031
+[2026-07-02T10:17:24.692Z] [UTBOT       ] UT Bot selesai → 0 BUY, 1 SELL signal
+[2026-07-02T10:17:24.692Z] [UTBOT       ]   Skip 1 SELL (tidak ada posisi): NOMUSDT
+[2026-07-02T10:20:00.678Z] [MANAGER     ] Tidak ada posisi terbuka
+[2026-07-02T10:30:00.285Z] [MANAGER     ] Tidak ada posisi terbuka
+[2026-07-02T10:40:00.878Z] [MANAGER     ] Tidak ada posisi terbuka
+[2026-07-02T10:50:00.470Z] [MANAGER     ] Tidak ada posisi terbuka
+[2026-07-02T11:00:00.065Z] [MANAGER     ] Tidak ada posisi terbuka
+[2026-07-02T11:10:00.660Z] [MANAGER     ] Tidak ada posisi terbuka
+[2026-07-02T11:20:00.271Z] [MANAGER     ] Tidak ada posisi terbuka
+[2026-07-02T11:21:36.877Z] [SCREENER    ] 📡 Menjalankan UT Bot Alert Screener (4H)...
+[2026-07-02T11:21:37.026Z] [UTBOT       ] ══ UT Bot Alert Screener (4H | key=2 atr=10 | mode=all) ══
+[2026-07-02T11:21:37.026Z] [SYMBOL_FILTER] Filter: 1175 → 611 ticker (564 non-crypto dibuang)
+[2026-07-02T11:21:37.026Z] [UTBOT       ] Scanning 54 koin (4H)...
+[2026-07-02T11:21:45.076Z] [UTBOT       ]   🔴 SELL [4H]: TLMUSDT @ 0.001147 | TS=0.001485
+[2026-07-02T11:22:06.301Z] [UTBOT       ] UT Bot selesai → 0 BUY, 1 SELL signal
+[2026-07-02T11:22:06.301Z] [UTBOT       ]   Skip 1 SELL (tidak ada posisi): TLMUSDT
+[2026-07-02T11:30:00.868Z] [MANAGER     ] Tidak ada posisi terbuka
+[2026-07-02T11:40:00.492Z] [MANAGER     ] Tidak ada posisi terbuka
+[2026-07-02T11:50:00.131Z] [MANAGER     ] Tidak ada posisi terbuka
+[2026-07-02T12:00:00.762Z] [MANAGER     ] Tidak ada posisi terbuka
+[2026-07-02T12:05:00.069Z] [CRON        ]   UTBot 4H  : 5 */4 * * * → setiap 240 menit (offset +5m setelah candle close)
+[2026-07-02T12:05:00.069Z] [SCREENER    ] 📡 Menjalankan UT Bot Alert Screener (4H)...
+[2026-07-02T12:05:00.251Z] [UTBOT       ] ══ UT Bot Alert Screener (4H | key=2 atr=10 | mode=all) ══
+[2026-07-02T12:05:00.252Z] [SYMBOL_FILTER] Filter: 1175 → 611 ticker (564 non-crypto dibuang)
+[2026-07-02T12:05:00.252Z] [UTBOT       ] Scanning 55 koin (4H)...
+[2026-07-02T12:05:01.095Z] [UTBOT       ]   🟢 BUY [4H]: UNIUSDT @ 3.043 | TS=2.873629
+[2026-07-02T12:05:01.858Z] [UTBOT       ]   🟢 BUY [4H]: DOGEUSDT @ 0.07419 | TS=0.071154
+[2026-07-02T12:05:02.737Z] [UTBOT       ]   🟢 BUY [4H]: XRPUSDT @ 1.084 | TS=1.045527
+[2026-07-02T12:05:06.220Z] [UTBOT       ]   🟢 BUY [4H]: BNBUSDT @ 559.6 | TS=542.331314
+[2026-07-02T12:05:08.239Z] [UTBOT       ]   🟢 BUY [4H]: TLMUSDT @ 0.001819 | TS=0.001362
+[2026-07-02T12:05:08.995Z] [UTBOT       ]   🟢 BUY [4H]: GRAMUSDT @ 1.66 | TS=1.574624
+[2026-07-02T12:05:22.352Z] [UTBOT       ]   🔴 SELL [4H]: ZBTUSDT @ 0.13504 | TS=0.156825
+[2026-07-02T12:05:30.334Z] [UTBOT       ] UT Bot selesai → 6 BUY, 1 SELL signal
+[2026-07-02T12:05:30.335Z] [UTBOT       ]   Skip 1 SELL (tidak ada posisi): ZBTUSDT
+[2026-07-02T12:05:30.335Z] [UTBOT       ]   5 BUY signal → 🤖 auto execute
+[2026-07-02T12:05:30.335Z] [APPROVAL    ] 🤖 AUTO EXECUTE mode aktif — 5 kandidat akan langsung dibeli
+[2026-07-02T12:05:30.335Z] [APPROVAL    ] 🤖 Auto execute: UNIUSDT
+[2026-07-02T12:05:30.336Z] [EXECUTOR    ] Mencoba beli UNIUSDT | budget=100 USDT
+[2026-07-02T12:05:30.413Z] [EXECUTOR    ] [DRY RUN] BUY UNIUSDT qty=32.66 @ 3.061
+[2026-07-02T12:05:30.415Z] [STATE       ] 📂 Posisi dibuka: UNIUSDT @ 3.061 qty=32.66
+[2026-07-02T12:05:30.415Z] [TRADE       ] 🟢 BUY UNIUSDT | qty=32.66 | price=3.061 | reason=dry-run
+[2026-07-02T12:05:30.917Z] [APPROVAL    ] 🤖 Auto execute: DOGEUSDT
+[2026-07-02T12:05:30.917Z] [EXECUTOR    ] Mencoba beli DOGEUSDT | budget=100 USDT
+[2026-07-02T12:05:30.993Z] [EXECUTOR    ] [DRY RUN] BUY DOGEUSDT qty=1347.7 @ 0.0742
+[2026-07-02T12:05:30.994Z] [STATE       ] 📂 Posisi dibuka: DOGEUSDT @ 0.0742 qty=1347.7
+[2026-07-02T12:05:30.994Z] [TRADE       ] 🟢 BUY DOGEUSDT | qty=1347.7 | price=0.0742 | reason=dry-run
+[2026-07-02T12:05:31.495Z] [APPROVAL    ] 🤖 Auto execute: XRPUSDT
+[2026-07-02T12:05:31.495Z] [EXECUTOR    ] Mencoba beli XRPUSDT | budget=100 USDT
+[2026-07-02T12:05:31.572Z] [EXECUTOR    ] [DRY RUN] BUY XRPUSDT qty=92.19 @ 1.0847
+[2026-07-02T12:05:31.573Z] [STATE       ] 📂 Posisi dibuka: XRPUSDT @ 1.0847 qty=92.19
+[2026-07-02T12:05:31.573Z] [TRADE       ] 🟢 BUY XRPUSDT | qty=92.19 | price=1.0847 | reason=dry-run
+[2026-07-02T12:05:32.074Z] [APPROVAL    ] 🤖 Auto execute: BNBUSDT
+[2026-07-02T12:05:32.074Z] [EXECUTOR    ] Mencoba beli BNBUSDT | budget=100 USDT
+[2026-07-02T12:05:32.150Z] [EXECUTOR    ] [DRY RUN] BUY BNBUSDT qty=0.1785 @ 560
+[2026-07-02T12:05:32.152Z] [STATE       ] 📂 Posisi dibuka: BNBUSDT @ 560 qty=0.1785
+[2026-07-02T12:05:32.152Z] [TRADE       ] 🟢 BUY BNBUSDT | qty=0.1785 | price=560 | reason=dry-run
+[2026-07-02T12:05:32.653Z] [APPROVAL    ] 🤖 Auto execute: TLMUSDT
+[2026-07-02T12:05:32.653Z] [EXECUTOR    ] Mencoba beli TLMUSDT | budget=100 USDT
+[2026-07-02T12:05:32.731Z] [EXECUTOR    ] [DRY RUN] BUY TLMUSDT qty=61425.06 @ 0.001628
+[2026-07-02T12:05:32.731Z] [STATE       ] 📂 Posisi dibuka: TLMUSDT @ 0.001628 qty=61425.06
+[2026-07-02T12:05:32.731Z] [TRADE       ] 🟢 BUY TLMUSDT | qty=61425.06 | price=0.001628 | reason=dry-run
+[2026-07-02T12:10:00.371Z] [MANAGER     ] Mengevaluasi 5 posisi...
+[2026-07-02T12:10:00.545Z] [MANAGER     ] UNIUSDT | price=3.063 entry=3.061 PnL=0.07% | hold=0.1h | trailing=off
+[2026-07-02T12:10:00.926Z] [MANAGER     ] DOGEUSDT | price=0.07428 entry=0.0742 PnL=0.11% | hold=0.1h | trailing=off
+[2026-07-02T12:10:01.309Z] [MANAGER     ] XRPUSDT | price=1.0868 entry=1.0847 PnL=0.19% | hold=0.1h | trailing=off
+[2026-07-02T12:10:01.691Z] [MANAGER     ] BNBUSDT | price=560.1 entry=560 PnL=0.02% | hold=0.1h | trailing=off
+[2026-07-02T12:10:02.081Z] [MANAGER     ] TLMUSDT | price=0.001699 entry=0.001628 PnL=4.36% | hold=0.1h | trailing=off
+[2026-07-02T12:10:02.382Z] [MANAGER     ] Siklus management selesai
+[2026-07-02T12:20:00.000Z] [MANAGER     ] Mengevaluasi 5 posisi...
+[2026-07-02T12:20:00.463Z] [MANAGER     ] UNIUSDT | price=3.077 entry=3.061 PnL=0.52% | hold=0.2h | trailing=off
+[2026-07-02T12:20:00.841Z] [MANAGER     ] DOGEUSDT | price=0.07416 entry=0.0742 PnL=-0.05% | hold=0.2h | trailing=off
+[2026-07-02T12:20:01.219Z] [MANAGER     ] XRPUSDT | price=1.087 entry=1.0847 PnL=0.21% | hold=0.2h | trailing=off
+[2026-07-02T12:20:01.599Z] [MANAGER     ] BNBUSDT | price=559.5 entry=560 PnL=-0.09% | hold=0.2h | trailing=off
+[2026-07-02T12:20:01.977Z] [MANAGER     ] TLMUSDT | price=0.001541 entry=0.001628 PnL=-5.34% | hold=0.2h | trailing=off
+[2026-07-02T12:20:01.978Z] [MANAGER     ] 🛑 Stop Loss hit: TLMUSDT | price=0.001541 SL=0.001547
+[2026-07-02T12:20:01.978Z] [EXECUTOR    ] Mencoba jual TLMUSDT | qty=61425.06 | reason=stop_loss
+[2026-07-02T12:20:02.059Z] [EXECUTOR    ] [DRY RUN] SELL TLMUSDT qty=61425.06 @ 0.001541
+[2026-07-02T12:20:02.060Z] [STATE       ] 📁 Posisi ditutup: TLMUSDT @ 0.001541 | PnL=-5.34% (-5.34 USDT)
+[2026-07-02T12:20:02.060Z] [TRADE       ] 🔴 SELL TLMUSDT | qty=61425.06 | price=0.001541 | reason=stop_loss
+[2026-07-02T12:20:02.361Z] [MANAGER     ] Siklus management selesai
+[2026-07-02T12:30:00.622Z] [MANAGER     ] Mengevaluasi 4 posisi...
+[2026-07-02T12:30:00.808Z] [MANAGER     ] UNIUSDT | price=3.131 entry=3.061 PnL=2.29% | hold=0.4h | trailing=off
+[2026-07-02T12:30:01.197Z] [MANAGER     ] DOGEUSDT | price=0.07429 entry=0.0742 PnL=0.12% | hold=0.4h | trailing=off
+[2026-07-02T12:30:01.839Z] [MANAGER     ] XRPUSDT | price=1.092 entry=1.0847 PnL=0.67% | hold=0.4h | trailing=off
+[2026-07-02T12:30:02.246Z] [MANAGER     ] BNBUSDT | price=561.5 entry=560 PnL=0.27% | hold=0.4h | trailing=off
+[2026-07-02T12:30:02.547Z] [MANAGER     ] Siklus management selesai
+[2026-07-02T12:40:00.244Z] [MANAGER     ] Mengevaluasi 4 posisi...
+[2026-07-02T12:40:00.329Z] [MANAGER     ] UNIUSDT | price=3.123 entry=3.061 PnL=2.03% | hold=0.6h | trailing=off
+[2026-07-02T12:40:00.709Z] [MANAGER     ] DOGEUSDT | price=0.07442 entry=0.0742 PnL=0.30% | hold=0.6h | trailing=off
+[2026-07-02T12:40:01.093Z] [MANAGER     ] XRPUSDT | price=1.0936 entry=1.0847 PnL=0.82% | hold=0.6h | trailing=off
+[2026-07-02T12:40:01.490Z] [MANAGER     ] BNBUSDT | price=561.5 entry=560 PnL=0.27% | hold=0.6h | trailing=off
+[2026-07-02T12:40:01.791Z] [MANAGER     ] Siklus management selesai
+[2026-07-02T12:50:00.886Z] [MANAGER     ] Mengevaluasi 4 posisi...
+[2026-07-02T12:50:01.410Z] [MANAGER     ] UNIUSDT | price=3.153 entry=3.061 PnL=3.01% | hold=0.7h | trailing=off
+[2026-07-02T12:50:01.805Z] [MANAGER     ] DOGEUSDT | price=0.0743 entry=0.0742 PnL=0.13% | hold=0.7h | trailing=off
+[2026-07-02T12:50:02.187Z] [MANAGER     ] XRPUSDT | price=1.0935 entry=1.0847 PnL=0.81% | hold=0.7h | trailing=off
+[2026-07-02T12:50:02.564Z] [MANAGER     ] BNBUSDT | price=561.4 entry=560 PnL=0.25% | hold=0.7h | trailing=off
+[2026-07-02T12:50:02.865Z] [MANAGER     ] Siklus management selesai
+[2026-07-02T13:00:00.523Z] [MANAGER     ] Mengevaluasi 4 posisi...
+[2026-07-02T13:00:00.705Z] [MANAGER     ] UNIUSDT | price=3.153 entry=3.061 PnL=3.01% | hold=0.9h | trailing=off
+[2026-07-02T13:00:01.101Z] [MANAGER     ] DOGEUSDT | price=0.07434 entry=0.0742 PnL=0.19% | hold=0.9h | trailing=off
+[2026-07-02T13:00:01.720Z] [MANAGER     ] XRPUSDT | price=1.0929 entry=1.0847 PnL=0.76% | hold=0.9h | trailing=off
+[2026-07-02T13:00:02.098Z] [MANAGER     ] BNBUSDT | price=563.3 entry=560 PnL=0.59% | hold=0.9h | trailing=off
+[2026-07-02T13:00:02.398Z] [MANAGER     ] Siklus management selesai
+[2026-07-02T13:10:00.150Z] [MANAGER     ] Mengevaluasi 4 posisi...
+[2026-07-02T13:10:00.370Z] [MANAGER     ] UNIUSDT | price=3.167 entry=3.061 PnL=3.46% | hold=1.1h | trailing=off
+[2026-07-02T13:10:00.750Z] [MANAGER     ] DOGEUSDT | price=0.0744 entry=0.0742 PnL=0.27% | hold=1.1h | trailing=off
+[2026-07-02T13:10:01.132Z] [MANAGER     ] XRPUSDT | price=1.0956 entry=1.0847 PnL=1.00% | hold=1.1h | trailing=off
+[2026-07-02T13:10:01.517Z] [MANAGER     ] BNBUSDT | price=563.2 entry=560 PnL=0.57% | hold=1.1h | trailing=off
+[2026-07-02T13:10:01.818Z] [MANAGER     ] Siklus management selesai
+[2026-07-02T13:20:00.793Z] [MANAGER     ] Mengevaluasi 4 posisi...
+[2026-07-02T13:20:00.981Z] [MANAGER     ] UNIUSDT | price=3.146 entry=3.061 PnL=2.78% | hold=1.2h | trailing=off
+[2026-07-02T13:20:01.361Z] [MANAGER     ] DOGEUSDT | price=0.07465 entry=0.0742 PnL=0.61% | hold=1.2h | trailing=off
+[2026-07-02T13:20:01.744Z] [MANAGER     ] XRPUSDT | price=1.0962 entry=1.0847 PnL=1.06% | hold=1.2h | trailing=off
+[2026-07-02T13:20:02.146Z] [MANAGER     ] BNBUSDT | price=564.7 entry=560 PnL=0.84% | hold=1.2h | trailing=off
+[2026-07-02T13:20:02.447Z] [MANAGER     ] Siklus management selesai
+[2026-07-02T13:30:00.442Z] [MANAGER     ] Mengevaluasi 4 posisi...
+[2026-07-02T13:30:00.726Z] [MANAGER     ] UNIUSDT | price=3.164 entry=3.061 PnL=3.36% | hold=1.4h | trailing=off
+[2026-07-02T13:30:01.127Z] [MANAGER     ] DOGEUSDT | price=0.0746 entry=0.0742 PnL=0.54% | hold=1.4h | trailing=off
+[2026-07-02T13:30:01.521Z] [MANAGER     ] XRPUSDT | price=1.0984 entry=1.0847 PnL=1.26% | hold=1.4h | trailing=off
+[2026-07-02T13:30:01.936Z] [MANAGER     ] BNBUSDT | price=562.7 entry=560 PnL=0.48% | hold=1.4h | trailing=off
+[2026-07-02T13:30:02.236Z] [MANAGER     ] Siklus management selesai
+[2026-07-02T13:40:00.077Z] [MANAGER     ] Mengevaluasi 4 posisi...
+[2026-07-02T13:40:00.341Z] [MANAGER     ] UNIUSDT | price=3.18 entry=3.061 PnL=3.89% | hold=1.6h | trailing=off
+[2026-07-02T13:40:00.745Z] [MANAGER     ] DOGEUSDT | price=0.07541 entry=0.0742 PnL=1.63% | hold=1.6h | trailing=off
+[2026-07-02T13:40:01.137Z] [MANAGER     ] XRPUSDT | price=1.109 entry=1.0847 PnL=2.24% | hold=1.6h | trailing=off
+[2026-07-02T13:40:01.518Z] [MANAGER     ] BNBUSDT | price=565.9 entry=560 PnL=1.05% | hold=1.6h | trailing=off
+[2026-07-02T13:40:01.818Z] [MANAGER     ] Siklus management selesai
+[2026-07-02T13:50:00.724Z] [MANAGER     ] Mengevaluasi 4 posisi...
+[2026-07-02T13:50:00.885Z] [MANAGER     ] UNIUSDT | price=3.19 entry=3.061 PnL=4.21% | hold=1.7h | trailing=off
+[2026-07-02T13:50:01.266Z] [MANAGER     ] DOGEUSDT | price=0.07541 entry=0.0742 PnL=1.63% | hold=1.7h | trailing=off
+[2026-07-02T13:50:01.644Z] [MANAGER     ] XRPUSDT | price=1.1095 entry=1.0847 PnL=2.29% | hold=1.7h | trailing=off
+[2026-07-02T13:50:02.025Z] [MANAGER     ] BNBUSDT | price=565.6 entry=560 PnL=1.00% | hold=1.7h | trailing=off
+[2026-07-02T13:50:02.333Z] [MANAGER     ] Siklus management selesai
+[2026-07-02T14:00:00.347Z] [MANAGER     ] Mengevaluasi 4 posisi...
+[2026-07-02T14:00:00.494Z] [MANAGER     ] UNIUSDT | price=3.187 entry=3.061 PnL=4.12% | hold=1.9h | trailing=off
+[2026-07-02T14:00:00.876Z] [MANAGER     ] DOGEUSDT | price=0.07504 entry=0.0742 PnL=1.13% | hold=1.9h | trailing=off
+[2026-07-02T14:00:01.259Z] [MANAGER     ] XRPUSDT | price=1.104 entry=1.0847 PnL=1.78% | hold=1.9h | trailing=off
+[2026-07-02T14:00:01.665Z] [MANAGER     ] BNBUSDT | price=565.2 entry=560 PnL=0.93% | hold=1.9h | trailing=off
+[2026-07-02T14:00:01.966Z] [MANAGER     ] Siklus management selesai
+[2026-07-02T14:10:00.995Z] [MANAGER     ] Mengevaluasi 4 posisi...
+[2026-07-02T14:10:01.161Z] [MANAGER     ] UNIUSDT | price=3.198 entry=3.061 PnL=4.48% | hold=2.1h | trailing=off
+[2026-07-02T14:10:01.544Z] [MANAGER     ] DOGEUSDT | price=0.07491 entry=0.0742 PnL=0.96% | hold=2.1h | trailing=off
+[2026-07-02T14:10:01.926Z] [MANAGER     ] XRPUSDT | price=1.1021 entry=1.0847 PnL=1.60% | hold=2.1h | trailing=off
+[2026-07-02T14:10:02.314Z] [MANAGER     ] BNBUSDT | price=563.8 entry=560 PnL=0.68% | hold=2.1h | trailing=off
+[2026-07-02T14:10:02.615Z] [MANAGER     ] Siklus management selesai
+[2026-07-02T14:20:00.647Z] [MANAGER     ] Mengevaluasi 4 posisi...
+[2026-07-02T14:20:00.830Z] [MANAGER     ] UNIUSDT | price=3.2 entry=3.061 PnL=4.54% | hold=2.2h | trailing=off
+[2026-07-02T14:20:01.216Z] [MANAGER     ] DOGEUSDT | price=0.07503 entry=0.0742 PnL=1.12% | hold=2.2h | trailing=off
+[2026-07-02T14:20:01.632Z] [MANAGER     ] XRPUSDT | price=1.0986 entry=1.0847 PnL=1.28% | hold=2.2h | trailing=off
+[2026-07-02T14:20:02.013Z] [MANAGER     ] BNBUSDT | price=563.3 entry=560 PnL=0.59% | hold=2.2h | trailing=off
+[2026-07-02T14:20:02.314Z] [MANAGER     ] Siklus management selesai
+[2026-07-02T14:30:00.297Z] [MANAGER     ] Mengevaluasi 4 posisi...
+[2026-07-02T14:30:00.579Z] [MANAGER     ] UNIUSDT | price=3.206 entry=3.061 PnL=4.74% | hold=2.4h | trailing=off
+[2026-07-02T14:30:00.960Z] [MANAGER     ] DOGEUSDT | price=0.07466 entry=0.0742 PnL=0.62% | hold=2.4h | trailing=off
+[2026-07-02T14:30:01.344Z] [MANAGER     ] XRPUSDT | price=1.0916 entry=1.0847 PnL=0.64% | hold=2.4h | trailing=off
+[2026-07-02T14:30:01.728Z] [MANAGER     ] BNBUSDT | price=561.4 entry=560 PnL=0.25% | hold=2.4h | trailing=off
+[2026-07-02T14:30:02.029Z] [MANAGER     ] Siklus management selesai
+[2026-07-02T14:40:00.947Z] [MANAGER     ] Mengevaluasi 4 posisi...
+[2026-07-02T14:40:01.137Z] [MANAGER     ] UNIUSDT | price=3.164 entry=3.061 PnL=3.36% | hold=2.6h | trailing=off
+[2026-07-02T14:40:01.519Z] [MANAGER     ] DOGEUSDT | price=0.07454 entry=0.0742 PnL=0.46% | hold=2.6h | trailing=off
+[2026-07-02T14:40:01.902Z] [MANAGER     ] XRPUSDT | price=1.0897 entry=1.0847 PnL=0.46% | hold=2.6h | trailing=off
+[2026-07-02T14:40:02.282Z] [MANAGER     ] BNBUSDT | price=561.1 entry=560 PnL=0.20% | hold=2.6h | trailing=off
+[2026-07-02T14:40:02.583Z] [MANAGER     ] Siklus management selesai
+[2026-07-02T14:50:00.597Z] [MANAGER     ] Mengevaluasi 4 posisi...
+[2026-07-02T14:50:00.793Z] [MANAGER     ] UNIUSDT | price=3.186 entry=3.061 PnL=4.08% | hold=2.7h | trailing=off
+[2026-07-02T14:50:01.176Z] [MANAGER     ] DOGEUSDT | price=0.07461 entry=0.0742 PnL=0.55% | hold=2.7h | trailing=off
+[2026-07-02T14:50:01.562Z] [MANAGER     ] XRPUSDT | price=1.0912 entry=1.0847 PnL=0.60% | hold=2.7h | trailing=off
+[2026-07-02T14:50:01.941Z] [MANAGER     ] BNBUSDT | price=561.6 entry=560 PnL=0.29% | hold=2.7h | trailing=off
+[2026-07-02T14:50:02.242Z] [MANAGER     ] Siklus management selesai

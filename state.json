@@ -1,0 +1,112 @@
+{
+  "positions": {
+    "UNIUSDT": {
+      "symbol": "UNIUSDT",
+      "entryPrice": 3.061,
+      "quantity": 32.66,
+      "orderId": "dryrun_1782993930414",
+      "budget": 100,
+      "score": 65,
+      "signals": {
+        "utbotSignal": {
+          "bullish": true,
+          "label": "UT Bot BUY [4H] — close 3.043 cross above trailing stop 2.873629"
+        }
+      },
+      "slPrice": null,
+      "tp1Price": null,
+      "openedAt": "2026-07-02T12:05:30.414Z",
+      "peakPrice": 3.061,
+      "trailingActive": false,
+      "partialSells": []
+    },
+    "DOGEUSDT": {
+      "symbol": "DOGEUSDT",
+      "entryPrice": 0.0742,
+      "quantity": 1347.7,
+      "orderId": "dryrun_1782993930993",
+      "budget": 100,
+      "score": 65,
+      "signals": {
+        "utbotSignal": {
+          "bullish": true,
+          "label": "UT Bot BUY [4H] — close 0.07419 cross above trailing stop 0.071154"
+        }
+      },
+      "slPrice": null,
+      "tp1Price": null,
+      "openedAt": "2026-07-02T12:05:30.993Z",
+      "peakPrice": 0.0742,
+      "trailingActive": false,
+      "partialSells": []
+    },
+    "XRPUSDT": {
+      "symbol": "XRPUSDT",
+      "entryPrice": 1.0847,
+      "quantity": 92.19,
+      "orderId": "dryrun_1782993931572",
+      "budget": 100,
+      "score": 65,
+      "signals": {
+        "utbotSignal": {
+          "bullish": true,
+          "label": "UT Bot BUY [4H] — close 1.084 cross above trailing stop 1.045527"
+        }
+      },
+      "slPrice": null,
+      "tp1Price": null,
+      "openedAt": "2026-07-02T12:05:31.572Z",
+      "peakPrice": 1.0847,
+      "trailingActive": false,
+      "partialSells": []
+    },
+    "BNBUSDT": {
+      "symbol": "BNBUSDT",
+      "entryPrice": 560,
+      "quantity": 0.1785,
+      "orderId": "dryrun_1782993932152",
+      "budget": 100,
+      "score": 65,
+      "signals": {
+        "utbotSignal": {
+          "bullish": true,
+          "label": "UT Bot BUY [4H] — close 559.6 cross above trailing stop 542.331314"
+        }
+      },
+      "slPrice": null,
+      "tp1Price": null,
+      "openedAt": "2026-07-02T12:05:32.152Z",
+      "peakPrice": 560,
+      "trailingActive": false,
+      "partialSells": []
+    }
+  },
+  "closed": [
+    {
+      "symbol": "TLMUSDT",
+      "entryPrice": 0.001628,
+      "quantity": 61425.06,
+      "orderId": "dryrun_1782993932731",
+      "budget": 100,
+      "score": 65,
+      "signals": {
+        "utbotSignal": {
+          "bullish": true,
+          "label": "UT Bot BUY [4H] — close 0.001819 cross above trailing stop 0.001362"
+        }
+      },
+      "slPrice": null,
+      "tp1Price": null,
+      "openedAt": "2026-07-02T12:05:32.731Z",
+      "peakPrice": 0.001628,
+      "trailingActive": false,
+      "partialSells": [],
+      "exitPrice": 0.001541,
+      "closedAt": "2026-07-02T12:20:02.060Z",
+      "reason": "stop_loss",
+      "pnlUsdt": -5.343980220000003,
+      "pnlPct": -5.3439803439803475
+    }
+  ],
+  "totalPnlUsdt": -5.343980220000003
+}

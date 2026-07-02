@@ -1,0 +1,6 @@
+{"ts":"2026-07-02T12:05:30.415Z","side":"buy","symbol":"UNIUSDT","qty":32.66,"price":3.061,"reason":"dry-run"}
+{"ts":"2026-07-02T12:05:30.994Z","side":"buy","symbol":"DOGEUSDT","qty":1347.7,"price":0.0742,"reason":"dry-run"}
+{"ts":"2026-07-02T12:05:31.573Z","side":"buy","symbol":"XRPUSDT","qty":92.19,"price":1.0847,"reason":"dry-run"}
+{"ts":"2026-07-02T12:05:32.152Z","side":"buy","symbol":"BNBUSDT","qty":0.1785,"price":560,"reason":"dry-run"}
+{"ts":"2026-07-02T12:05:32.731Z","side":"buy","symbol":"TLMUSDT","qty":61425.06,"price":0.001628,"reason":"dry-run"}
+{"ts":"2026-07-02T12:20:02.060Z","side":"sell","symbol":"TLMUSDT","qty":61425.06,"price":0.001541,"reason":"stop_loss"}

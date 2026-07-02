@@ -20,7 +20,7 @@ function sleep(ms) {
 
 function getEffectiveSL(position, mgmt) {
   if (position.trailingActive) {
-    return position.entryPrice * (1 - 0.001);
+    return position.entryPrice * (1 + 0.01);   // breakeven + buffer 1% di ATAS entry
   }
   if (position.slPrice && position.slPrice > 0) {
     return position.slPrice;

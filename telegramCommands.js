@@ -90,9 +90,16 @@ async function buildStatusText(callbacks) {
         const sign  = pnl >= 0 ? '+' : '';
         const emoji = pnl >= 0 ? '🟢' : '🔴';
         const flags = [hasBEP ? 'BEP✅' : '', pos.trailingActive ? '🔻TRAIL' : ''].filter(Boolean).join(' ');
-        const effectiveSL = (hasBEP || pos.trailingActive)
-          ? pos.entryPrice * (1 - 0.001)
-          : (pos.slPrice ?? pos.entryPrice * (1 - Math.abs(mgmt.stopLossPct ?? 5) / 100));
+        function getEffectiveSL(position, mgmt) {
+         if (position.trailingActive) {
+          return position.entryPrice * (1 + 0.01);   // breakeven + buffer 1% di ATAS entry
+          }
+            if (position.slPrice && position.slPrice > 0) {
+             return position.slPrice;
+              }
+            const slPct = Math.abs(mgmt.stopLossPct ?? 4);
+            return position.entryPrice * (1 - slPct / 100);
+          }
         const tp1 = pos.tp1Price ?? pos.entryPrice + (pos.entryPrice - effectiveSL) * (mgmt.minRiskReward ?? 2);
         text += `${emoji} <b>${symbol}</b>${flags ? ' ' + flags : ''}\n`;
         text += `   Entry : ${pos.entryPrice} | Now: ${cur ?? '—'}\n`;

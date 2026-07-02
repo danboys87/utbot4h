@@ -184,3 +184,25 @@
 [2026-07-01T13:07:16.355Z] [UTBOT       ]   🔴 SELL [4H]: VELVETUSDT @ 1.42106 | TS=1.769181
 [2026-07-01T13:07:23.453Z] [UTBOT       ] UT Bot selesai → 0 BUY, 2 SELL signal
 [2026-07-01T13:07:23.453Z] [UTBOT       ]   Skip 2 SELL (tidak ada posisi): HYPEUSDT, VELVETUSDT
+[2026-07-01T13:10:00.789Z] [MANAGER     ] Tidak ada posisi terbuka
+[2026-07-01T13:20:00.406Z] [MANAGER     ] Tidak ada posisi terbuka
+[2026-07-01T13:27:17.371Z] [SCREENER    ] 📡 Menjalankan UT Bot Alert Screener (4H)...
+[2026-07-01T13:27:17.556Z] [UTBOT       ] ══ UT Bot Alert Screener (4H | key=2 atr=10 | mode=all) ══
+[2026-07-01T13:27:17.556Z] [SYMBOL_FILTER] Filter: 1175 → 611 ticker (564 non-crypto dibuang)
+[2026-07-01T13:27:17.556Z] [UTBOT       ] Scanning 57 koin (4H)...
+[2026-07-01T13:27:48.437Z] [UTBOT       ] UT Bot selesai → 0 BUY, 0 SELL signal
+[2026-07-01T13:27:48.438Z] [UTBOT       ]   Tidak ada sinyal UTBot saat ini
+[2026-07-01T13:30:00.029Z] [MANAGER     ] Tidak ada posisi terbuka
+[2026-07-01T13:40:00.673Z] [MANAGER     ] Tidak ada posisi terbuka
+[2026-07-01T13:50:00.324Z] [MANAGER     ] Tidak ada posisi terbuka
+[2026-07-01T14:00:00.977Z] [MANAGER     ] Tidak ada posisi terbuka
+[2026-07-01T14:10:00.620Z] [MANAGER     ] Tidak ada posisi terbuka
+[2026-07-01T14:20:00.272Z] [MANAGER     ] Tidak ada posisi terbuka
+[2026-07-01T14:30:00.908Z] [MANAGER     ] Tidak ada posisi terbuka
+[2026-07-01T14:39:01.337Z] [SCREENER    ] 📡 Menjalankan UT Bot Alert Screener (4H)...
+[2026-07-01T14:39:01.850Z] [UTBOT       ] ══ UT Bot Alert Screener (4H | key=2 atr=10 | mode=all) ══
+[2026-07-01T14:39:01.851Z] [SYMBOL_FILTER] Filter: 1175 → 611 ticker (564 non-crypto dibuang)
+[2026-07-01T14:39:01.851Z] [UTBOT       ] Scanning 56 koin (4H)...
+[2026-07-01T14:39:32.319Z] [UTBOT       ] UT Bot selesai → 0 BUY, 0 SELL signal
+[2026-07-01T14:39:32.320Z] [UTBOT       ]   Tidak ada sinyal UTBot saat ini
+[2026-07-01T14:39:54.153Z] [TELEGRAM    ] Polling dihentikan
