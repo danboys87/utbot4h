@@ -1,5 +1,5 @@
 /**
- * Telegram Notifications — v4.0 UTBot 4H
+ * Telegram Notifications — v4.1 UTBot 4H
  */
 import { log } from './logger.js';
 import { getAIStatus } from './aiAnalyst.js';
@@ -74,7 +74,6 @@ export async function notifyBuy({ symbol, price, quantity, budget, score, signal
     .join('\n');
 
   const trailPct = config.management?.trailingStop?.trailPct ?? 2;
-  const tpPct    = config.management?.takeProfitPct ?? 8;
 
   const lines = [
     `🟢 <b>BUY Executed</b> — 📡 UT Bot Alert 4H`,
@@ -83,8 +82,8 @@ export async function notifyBuy({ symbol, price, quantity, budget, score, signal
     `Pair  : <b>${symbol}</b>`,
     `Entry : ${price}`,
     `SL    : ${slDisplay}`,
-    `TP    : +${tpPct}% → Close 100% posisi`,
-    `Trail : ${trailPct}% callback (aktif jika profit ≥ ${config.management?.trailingStop?.activateAtProfitPct ?? 4}%)`,
+    `Exit  : UT Bot SELL signal`,
+    `Trail : aktif saat profit ≥ ${config.management?.trailingStop?.activateAtProfitPct ?? 10}% (SL min. di entry), callback ${trailPct}% dari peak`,
     signalLines ? `\n${signalLines}` : '',
     ``,
     `📦 Qty: ${quantity} | Budget: ${budget} USDT`,
@@ -154,7 +153,7 @@ export async function notifyUTBot(signals) {
   await sendLong(lines.join('\n'));
 }
 
-// ── UTBot SELL Notification ───────────────────────────────────────────────────
+// ── UTBot SELL Notification (dipakai jika exitOnUTBotSell = false) ───────────
 export async function notifyUTBotSell(signals) {
   if (!signals?.length) return;
   const sellSignals = signals.filter(s => s.signal === 'SELL');
@@ -169,7 +168,7 @@ export async function notifyUTBotSell(signals) {
       `   Price : ${s.close}`,
       `   Trail : ${s.trailingStop?.toFixed(6)}`,
       `   ATR   : ${s.atr?.toFixed(6)}`,
-      hasPos ? `   <i>→ Manager akan handle exit via SL/TP</i>` : '',
+      hasPos ? `   <i>→ Exit otomatis dimatikan, jual manual: /sell ${s.symbol}</i>` : '',
     ].filter(Boolean).join('\n');
   };
 
@@ -179,7 +178,7 @@ export async function notifyUTBotSell(signals) {
     ``,
     ...sellSignals.map(fmt),
     ``,
-    `<i>ℹ️ SELL signal hanya notifikasi. Exit posisi dikelola oleh manager (TP/SL/Trailing).</i>`,
+    `<i>ℹ️ exitOnUTBotSell = false, jadi SELL signal hanya notifikasi.</i>`,
     `<i>Untuk exit manual: /sell SYMBOL</i>`,
   ];
   await sendLong(lines.join('\n'));
@@ -257,11 +256,13 @@ export async function notifySell({ symbol, entryPrice, exitPrice, pnlPct, pnlUsd
     stop_loss:     '🛑 Stop Loss',
     break_even_sl: '🔁 Break Even SL',
     trailing_stop: '🔻 Trailing Stop',
+    utbot_sell:    '📡 UT Bot SELL Signal',
     max_hold_time: '⏰ Max Hold Time',
     manual_sell:   '🖐 Manual Sell',
   };
   const extra = reason === 'break_even_sl' ? `\n✅ Modal dilindungi`
     : reason === 'trailing_stop'           ? `\n📈 Profit diamankan via trailing`
+    : reason === 'utbot_sell'              ? `\n📡 Exit mengikuti sinyal SELL UT Bot 4H`
     : '';
   await send(
     `${emoji} <b>SELL</b> ${symbol}\n` +
@@ -298,10 +299,11 @@ export async function notifyStartup(dryRun) {
   const cfg    = config;
   const utbMin = cfg.screening?.utbot?.checkIntervalMin ?? 240;
   await send(
-    `🚀 <b>Bot v4.0 — UT Bot Alert 4H</b>\n` +
+    `🚀 <b>Bot v4.1 — UT Bot Alert 4H</b>\n` +
     `Mode: ${dryRun ? '🧪 DRY RUN' : '💸 LIVE TRADING'}\n` +
     `📡 Screener : UTBot 4H (key=${cfg.screening?.utbot?.keyValue ?? 2} atr=${cfg.screening?.utbot?.atrPeriod ?? 10})\n` +
     `⏰ Interval : setiap ${utbMin} menit\n` +
+    `🚪 Exit     : UT Bot SELL${cfg.management?.exitOnUTBotSell !== false ? '' : ' (OFF)'} + Trailing @${cfg.management?.trailingStop?.activateAtProfitPct ?? 10}%\n` +
     `🤖 AI Analyst : ${getAIInfo()} (manual via /analyze)\n` +
     `Time: ${new Date().toLocaleString('id-ID')}`
   );

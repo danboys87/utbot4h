@@ -6,6 +6,7 @@
     "gasReserve": 3,
     "approvalTimeoutMin": 30,
     "manualApproval": true,
+    "feePct": 0.1,
     "autoExecute": true,
     "splitEntry": {
       "enabled": true,
@@ -33,11 +34,14 @@
     "trailingStop": {
       "enabled": true,
       "activateAfterTP1": true,
-      "activateAtProfitPct": 5,
+      "activateAtProfitPct": 10,
+      "breakevenBufferPct": 0,
       "trailPct": 2
     },
     "maxHoldHours": 120,
-    "takeProfitPct": 10
+    "takeProfitPct": 10,
+    "useFixedTP": false,
+    "exitOnUTBotSell": true
   },
   "schedule": {
     "managementIntervalMin": 10

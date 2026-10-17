@@ -156,8 +156,8 @@ body { font-family: var(--sans); background: var(--bg); color: var(--text); font
   <div class="nav-item" onclick="showPage('trade')"><span class="nav-icon">⇅</span> Buy / Sell</div>
   <div class="nav-item" onclick="showPage('screen')"><span class="nav-icon">⊙</span> Screening</div>
   <div class="nav-item" onclick="showPage('analyze')"><span class="nav-icon">◐</span> AI Analyst</div>
-  <div class="nav-section">History</div>
-  <div class="nav-item" onclick="showPage('history')"><span class="nav-icon">≡</span> Trade Log</div>
+  <div class="nav-section">Laporan</div>
+  <div class="nav-item" onclick="showPage('history')"><span class="nav-icon">≡</span> Laporan PnL</div>
   <div class="nav-item" onclick="showPage('logs')"><span class="nav-icon">⊟</span> Bot Logs</div>
   <div class="nav-section">Settings</div>
   <div class="nav-item" onclick="showPage('config')"><span class="nav-icon">⚙</span> Config</div>
@@ -173,7 +173,7 @@ body { font-family: var(--sans); background: var(--bg); color: var(--text); font
     <div class="stat-card"><div class="stat-label">Pending Approval</div><div class="stat-value" id="st-pending">—</div><div class="stat-sub" id="st-pending-sub">awaiting action</div></div>
     <div class="stat-card"><div class="stat-label">Closed Trades</div><div class="stat-value" id="st-closed">—</div><div class="stat-sub">all time</div></div>
     <div class="stat-card"><div class="stat-label">Budget / Trade</div><div class="stat-value" id="st-budget">—</div><div class="stat-sub" id="st-budget-sub"></div></div>
-    <div class="stat-card"><div class="stat-label">TP / SL</div><div class="stat-value" id="st-tpsl">—</div><div class="stat-sub" id="st-trail">—</div></div>
+    <div class="stat-card"><div class="stat-label">SL / Trailing</div><div class="stat-value" id="st-tpsl">—</div><div class="stat-sub" id="st-trail">—</div></div>
   </div>
   <div class="panel">
     <div class="panel-header"><div class="panel-title">◎ Open Positions</div><div class="panel-actions"><button class="btn sm" onclick="showPage('positions')">View All →</button></div></div>
@@ -269,8 +269,8 @@ body { font-family: var(--sans); background: var(--bg); color: var(--text); font
         <div style="font-weight:600;margin-bottom:6px;font-size:14px">UT Bot Alert — Timeframe 4H</div>
         <div style="color:var(--muted);font-size:12px;margin-bottom:6px;line-height:1.6">
           ATR Trailing Stop crossover pada candle 4 jam.<br>
-          Mendeteksi sinyal <b style="color:var(--green)">BUY</b> (close cross di atas trailing stop)
-          dan <b style="color:var(--red)">SELL</b> (close cross di bawah trailing stop).
+          Sinyal <b style="color:var(--green)">BUY</b> (close cross di atas trailing stop) untuk entry,
+          sinyal <b style="color:var(--red)">SELL</b> (close cross di bawah trailing stop) untuk exit posisi terbuka.
         </div>
         <div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:16px" id="utbotParams">Key: — | ATR: — | Interval: —</div>
         <button class="btn primary" style="width:100%;max-width:320px" onclick="doScreen()">▶ Jalankan UTBot 4H Scan</button>
@@ -278,7 +278,7 @@ body { font-family: var(--sans); background: var(--bg); color: var(--text); font
 
       <div class="panel" style="padding:14px">
         <div style="font-size:11px;color:var(--muted);margin-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:.06em">Management Cycle</div>
-        <button class="btn" onclick="doManage()">⚙ Run Management (TP/SL check)</button>
+        <button class="btn" onclick="doManage()">⚙ Run Management (SL/Trailing check)</button>
         <span style="color:var(--muted);font-size:11px;margin-left:10px">Evaluasi semua posisi terbuka sekarang</span>
       </div>
 
@@ -308,14 +308,29 @@ body { font-family: var(--sans); background: var(--bg); color: var(--text); font
   </div>
 </div>
 
-<!-- ═══════════════ PAGE: HISTORY ══════════════════════════════════════════ -->
+<!-- ═══════════════ PAGE: HISTORY (Laporan PnL Harian) ════════════════════ -->
 <div class="page" id="page-history">
+  <div class="stats-row" id="pnl-summary" style="grid-template-columns:repeat(3,1fr)"></div>
   <div class="panel">
-    <div class="panel-header"><div class="panel-title">≡ Trade History</div><div class="panel-actions"><button class="btn sm" onclick="loadHistory()">↻ Refresh</button></div></div>
+    <div class="panel-header">
+      <div class="panel-title">▦ PnL Harian</div>
+      <div class="panel-actions">
+        <select id="pnl-days" class="api-input" style="width:auto" onchange="loadHistory()">
+          <option value="7">7 hari</option>
+          <option value="30" selected>30 hari</option>
+          <option value="90">90 hari</option>
+          <option value="365">1 tahun</option>
+        </select>
+        <button class="btn" onclick="loadHistory()">↻ Refresh</button>
+      </div>
+    </div>
     <table class="tbl">
-      <thead><tr><th>Time</th><th>Side</th><th>Symbol</th><th>Price</th><th>Qty</th><th>Reason</th></tr></thead>
-      <tbody id="history-body"><tr><td colspan="6" class="empty">Load history...</td></tr></tbody>
+      <thead><tr><th>Tanggal</th><th>Deal Ditutup</th><th>Win Rate</th><th>PnL (USDT)</th></tr></thead>
+      <tbody id="pnl-body"><tr><td colspan="4" class="empty">Memuat laporan...</td></tr></tbody>
     </table>
+    <div id="pnl-note" style="padding:12px 16px;border-top:1px solid var(--border);font-size:11px;color:var(--muted)">
+      ℹ️ Klik baris tanggal untuk lihat detail deal. Deal yang ditutup lewat <b>Manual Sell</b> ikut tercatat tetapi PnL-nya tidak dihitung ke Total PnL / Win Rate. Fee = estimasi.
+    </div>
   </div>
 </div>
 
@@ -438,8 +453,8 @@ function renderStats(d) {
   el('st-closed').textContent    = d.stats?.closedCount ?? '—';
   el('st-budget').textContent    = cfg.budgetPerTrade ?? '—';
   el('st-budget-sub').textContent= 'USDT per trade';
-  el('st-tpsl').textContent      = `+${cfg.takeProfitPct ?? '—'}% / ${cfg.stopLossPct ?? '—'}%`;
-  el('st-trail').textContent     = `Trail ${cfg.trailPct ?? '—'}% after TP1`;
+  el('st-tpsl').textContent      = `${cfg.stopLossPct ?? '—'}% / +${cfg.trailActivatePct ?? '—'}%`;
+  el('st-trail').textContent     = `Callback ${cfg.trailPct ?? '—'}% dari peak`;
   el('modeLabel').textContent    = cfg.isDryRun ? '🧪 DRY RUN' : '💸 LIVE TRADING';
   const aiSt = cfg.aiStatus;
   el('aiLabel').textContent = aiSt?.enabled ? `🤖 ${aiSt.provider}` : '⚠ Set API Key';
@@ -522,7 +537,7 @@ function posRowFull(sym, p) {
     <td><span class="badge ${cls}">${sign}${pnlPct?.toFixed(2) ?? '—'}%</span></td>
     <td style="color:var(--${cls})">${sign}${pnlUsdt?.toFixed(2) ?? '—'}</td>
     <td>${p.quantity}</td>
-    <td style="color:var(--red)">${p.slPrice?.toFixed(6) ?? '—'}</td>
+    <td style="color:var(--red)">${(p.effectiveSL ?? p.slPrice)?.toFixed(6) ?? '—'}</td>
     <td>${status}</td>
     <td style="font-size:10px">${openedAt}</td>
     <td><button class="btn sm danger" onclick="quickSell('${sym}')">Sell</button></td>
@@ -766,14 +781,116 @@ function triggerAnalyze(symbol) {
   doAnalyze();
 }
 
+// ── Laporan PnL Harian ─────────────────────────────────────────────────────
+const _openDays = new Set();
+let _pnlInit = false;
+const DAYS_ID   = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
+const MONTHS_ID = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+const REASON_MAP = {
+  take_profit:    ['🎯', 'Take Profit'],
+  stop_loss:      ['🛑', 'Stop Loss'],
+  break_even_sl:  ['🔁', 'Break Even'],
+  trailing_stop:  ['🔻', 'Trailing Stop'],
+  utbot_sell:     ['📡', 'UT Bot Sell'],
+  max_hold_time:  ['⏰', 'Max Hold'],
+  manual_sell:    ['🖐', 'Manual Sell'],
+  manual_partial: ['🖐', 'Manual Partial'],
+};
+
+function wib(iso)      { return new Date(new Date(iso).getTime() + 7 * 3600000); }   // WIB (UTC+7)
+function pad2(n)       { return String(n).padStart(2, '0'); }
+function dayKey(iso)   { const d = wib(iso); return `${d.getUTCFullYear()}-${pad2(d.getUTCMonth() + 1)}-${pad2(d.getUTCDate())}`; }
+function dayLabel(iso) { const d = wib(iso); return `${DAYS_ID[d.getUTCDay()]}, ${d.getUTCDate()} ${MONTHS_ID[d.getUTCMonth()]} ${d.getUTCFullYear()}`; }
+function timeLabel(iso){ const d = wib(iso); return `${pad2(d.getUTCDate())}/${pad2(d.getUTCMonth() + 1)}/${d.getUTCFullYear()}, ${pad2(d.getUTCHours())}.${pad2(d.getUTCMinutes())}.${pad2(d.getUTCSeconds())}`; }
+function fmtSigned(n, dec = 2) { return (n >= 0 ? '+' : '') + Number(n).toFixed(dec); }
+function fmtPx(p)      { return p == null ? '—' : Number(p).toPrecision(6); }
+
+function toggleDay(key) {
+  const row = document.getElementById('pnl-d-' + key);
+  const arr = document.getElementById('pnl-a-' + key);
+  if (!row) return;
+  const open = row.style.display === 'none';
+  row.style.display = open ? 'table-row' : 'none';
+  if (arr) arr.textContent = open ? '▾' : '▸';
+  if (open) _openDays.add(key); else _openDays.delete(key);
+}
+
 async function loadHistory() {
-  const res = await apiFetch('/api/history');
-  const tbody = document.getElementById('history-body');
-  if (!res.ok || !res.trades?.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty">Tidak ada history</td></tr>'; return; }
-  tbody.innerHTML = res.trades.map(t => {
-    const side = t.side === 'buy' ? '<span class="badge green">BUY</span>' : '<span class="badge red">SELL</span>';
-    return `<tr><td style="font-size:11px">${new Date(t.ts).toLocaleString('id-ID')}</td><td>${side}</td><td><b>${t.symbol}</b></td><td style="font-family:var(--mono)">${t.price}</td><td style="font-family:var(--mono)">${t.qty}</td><td><span class="badge gray">${t.reason || '—'}</span></td></tr>`;
-  }).join('');
+  const days = document.getElementById('pnl-days')?.value || 30;
+  const body = document.getElementById('pnl-body');
+  const sum  = document.getElementById('pnl-summary');
+  let res;
+  try { res = await apiFetch('/api/pnl?days=' + days); }
+  catch (e) { body.innerHTML = '<tr><td colspan="4" class="empty">Gagal memuat laporan</td></tr>'; return; }
+
+  if (!res.ok || !res.trades?.length) {
+    body.innerHTML = '<tr><td colspan="4" class="empty">Belum ada deal yang ditutup pada periode ini</td></tr>';
+    sum.innerHTML = '';
+    return;
+  }
+
+  // Kelompokkan per tanggal (WIB). Trades sudah urut terbaru -> terlama.
+  const groups = new Map();
+  for (const t of res.trades) {
+    const k = dayKey(t.closedAt);
+    if (!groups.has(k)) groups.set(k, { label: dayLabel(t.closedAt), trades: [] });
+    groups.get(k).trades.push(t);
+  }
+
+  if (!_pnlInit) { _openDays.add(groups.keys().next().value); _pnlInit = true; }
+
+  let totPnl = 0, totDeals = 0, totWins = 0;
+  const html = [];
+
+  for (const [key, g] of groups) {
+    const auto  = g.trades.filter(t => !t.manual);
+    const wins  = auto.filter(t => t.pnlUsdt > 0).length;
+    const pnl   = auto.reduce((s, t) => s + t.pnlUsdt, 0);
+    totPnl += pnl; totDeals += auto.length; totWins += wins;
+
+    const wr    = auto.length ? `${wins}/${auto.length} <span style="color:var(--muted)">(${Math.round(wins / auto.length * 100)}%)</span>` : '—';
+    const cls   = pnl >= 0 ? 'green' : 'red';
+    const open  = _openDays.has(key);
+
+    html.push(`<tr onclick="toggleDay('${key}')" style="cursor:pointer">
+      <td><span id="pnl-a-${key}">${open ? '▾' : '▸'}</span> <b>${g.label}</b></td>
+      <td>${auto.length}${g.trades.length > auto.length ? ` <span class="badge gray">+${g.trades.length - auto.length} manual</span>` : ''}</td>
+      <td>${wr}</td>
+      <td style="color:var(--${cls})">${auto.length ? fmtSigned(pnl) + ' USDT' : '—'}</td>
+    </tr>`);
+
+    const rows = g.trades.map(t => {
+      const c  = t.pnlUsdt >= 0 ? 'green' : 'red';
+      const rm = REASON_MAP[t.reason] || ['•', t.reason || '—'];
+      return `<tr>
+        <td><b>${escHtml(t.symbol)}</b></td>
+        <td>${fmtPx(t.entryPrice)}</td>
+        <td>${fmtPx(t.exitPrice)}</td>
+        <td style="color:var(--${c})">${fmtSigned(t.pnlPct)}%</td>
+        <td style="color:var(--${c})">${fmtSigned(t.pnlUsdt)} USDT</td>
+        <td style="color:var(--muted)">${Number(t.fee).toFixed(4)} USDT</td>
+        <td>${rm[0]} ${escHtml(rm[1])}${t.manual ? ' <span class="badge gray">tidak dihitung</span>' : ''}</td>
+        <td style="font-size:11px">${timeLabel(t.closedAt)}</td>
+      </tr>`;
+    }).join('');
+
+    html.push(`<tr id="pnl-d-${key}" style="display:${open ? 'table-row' : 'none'}">
+      <td colspan="4" style="padding:0;background:var(--bg)">
+        <table class="tbl">
+          <thead><tr><th>Symbol</th><th>Avg</th><th>Exit</th><th>PnL%</th><th>PnL USDT (net fee)</th><th>Fee</th><th>Reason</th><th>Waktu</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </td>
+    </tr>`);
+  }
+
+  body.innerHTML = html.join('');
+
+  const tc = totPnl >= 0 ? 'green' : 'red';
+  sum.innerHTML = `
+    <div class="stat-card"><div class="stat-label">Total PnL (${days} hari)</div><div class="stat-value ${tc}">${fmtSigned(totPnl)}</div><div class="stat-sub">USDT, net fee estimasi ${res.feePct}%/sisi</div></div>
+    <div class="stat-card"><div class="stat-label">Deal Ditutup</div><div class="stat-value">${totDeals}</div><div class="stat-sub">di luar manual sell</div></div>
+    <div class="stat-card"><div class="stat-label">Win Rate</div><div class="stat-value">${totDeals ? Math.round(totWins / totDeals * 100) : 0}%</div><div class="stat-sub">${totWins}/${totDeals} menang</div></div>`;
 }
 
 async function loadLogs() {
@@ -823,16 +940,15 @@ async function loadConfig() {
     </div>
     <div class="field"><label>Budget / Trade (USDT)</label><input id="cfg-budget" type="number" value="${trade.budgetPerTrade||100}"></div>
     <div class="field"><label>Max Open Positions</label><input id="cfg-maxpos" type="number" value="${trade.maxOpenPositions||5}"></div>
-    <div class="field"><label>Take Profit % (TP1)</label><input id="cfg-tp" type="number" step="0.1" value="${mgmt.takeProfitPct||8}"></div>
     <div class="field"><label>Stop Loss %</label><input id="cfg-sl" type="number" step="0.1" value="${Math.abs(mgmt.stopLossPct||5)}"></div>
-    <div class="field"><label>Trailing Callback %</label><input id="cfg-trail" type="number" step="0.1" value="${mgmt.trailingStop?.trailPct||2}"></div>
-    <div class="field"><label>Activate Trailing at Profit %</label><input id="cfg-trail-activate" type="number" step="0.1" value="${mgmt.trailingStop?.activateAtProfitPct||4}"></div>
+    <div class="field"><label>Trailing Callback % (dari peak)</label><input id="cfg-trail" type="number" step="0.1" value="${mgmt.trailingStop?.trailPct||2}"></div>
+    <div class="field"><label>Aktifkan Trailing di Profit % (SL geser ke entry)</label><input id="cfg-trail-activate" type="number" step="0.1" value="${mgmt.trailingStop?.activateAtProfitPct||10}"></div>
     <div class="field"><label>Approval Timeout (menit)</label><input id="cfg-timeout" type="number" value="${trade.approvalTimeoutMin||30}"></div>
     <div class="field"><label>Min Volume 24h UTBot (USD)</label><input id="cfg-vol" type="number" value="${utbot.minVolume24h||5000000}"></div>
     <div class="field"><label>UTBot Key Value</label><input id="cfg-utbot-key" type="number" step="0.5" value="${utbot.keyValue||2}"></div>
     <div class="field"><label>UTBot ATR Period</label><input id="cfg-utbot-atr" type="number" value="${utbot.atrPeriod||10}"></div>
     <div class="field"><label>UTBot Check Interval (menit)</label><input id="cfg-utbot-interval" type="number" value="${utbot.checkIntervalMin||240}"></div>
-    <div class="field"><label>Max Hold Hours</label><input id="cfg-maxhold" type="number" value="${mgmt.maxHoldHours||120}"></div>
+    <div class="field"><label>Max Hold Hours (0 = nonaktif)</label><input id="cfg-maxhold" type="number" value="${mgmt.maxHoldHours ?? 120}"></div>
     <div class="field"><label>Management Interval (menit)</label><input id="cfg-manage" type="number" value="${cfg.schedule?.managementIntervalMin||10}"></div>
   `;
   document.getElementById('whitelist-editor').value = (cfg.whitelist || []).join('\n');
@@ -849,7 +965,6 @@ async function saveConfig() {
       autoExecute,
     },
     management: {
-      takeProfitPct: parseFloat(document.getElementById('cfg-tp').value),
       stopLossPct:   -Math.abs(parseFloat(document.getElementById('cfg-sl').value)),
       maxHoldHours:  parseInt(document.getElementById('cfg-maxhold').value),
       trailingStop:  { trailPct: parseFloat(document.getElementById('cfg-trail').value), activateAtProfitPct: parseFloat(document.getElementById('cfg-trail-activate').value) },
@@ -905,7 +1020,7 @@ function confBar(pct) {
 }
 
 function escHtml(s) {
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 </script>
 </body>

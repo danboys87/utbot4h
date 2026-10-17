@@ -4,14 +4,17 @@
  * Mendeteksi sinyal BUY dan SELL dari ATR Trailing Stop crossover di timeframe 4H.
  *
  * BUY  : close crosses ABOVE trailing stop
- * SELL : close crosses BELOW trailing stop (untuk posisi yang sudah open)
+ * SELL : close crosses BELOW trailing stop (dipakai untuk exit posisi yang sudah open)
+ *
+ * v4.1: koin dengan posisi terbuka SELALU di-scan lebih dulu (tidak kena filter volume),
+ *       dan SELL untuk posisi terbuka tidak di-dedupe.
  */
 
 import { getCandles, getAllTickers } from './bitget.js';
 import { calcUTBot }                 from './indicators.js';
 import { config }                    from './config.js';
 import { log }                       from './logger.js';
-import { hasPosition }               from './state.js';
+import { hasPosition, getOpenSymbols } from './state.js';
 import { filterCryptoOnly }          from './symbolFilter.js';
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
@@ -27,14 +30,14 @@ async function scanSymbol4H(symbol, cfg, _retry = 0) {
   const { keyValue, atrPeriod } = cfg;
   const MAX_RETRY = 2;
   const TF        = '4H';       // label tampilan (dipakai di log & hasil)
-  const API_TF    = '4h';       // ⬅ TAMBAHKAN INI — param valid utk Bitget API
-  const periodMs  = 14400000; // 4 jam
+  const API_TF    = '4h';       // param valid utk Bitget API
+  const periodMs  = 14400000;   // 4 jam
 
   try {
     const candleLimit = Math.max(atrPeriod * 8, 80); // atrPeriod=10 → 80 candle ≈ 13 hari
-    const raw         = await getCandles(symbol, API_TF, candleLimit);  // ⬅ ganti TF → API_TF
+    const raw         = await getCandles(symbol, API_TF, candleLimit);
     if (!Array.isArray(raw) || raw.length < atrPeriod + 10) return null;
-    // ... sisanya tetap sama, TF tetap dipakai untuk timeframe: TF, signalKey, dll
+
     const now         = Date.now();
     const periodStart = now - (now % periodMs);
     const closed      = raw
@@ -52,8 +55,9 @@ async function scanSymbol4H(symbol, cfg, _retry = 0) {
     if (!result || !result.signal) return null;
 
     // Deduplikasi per sinyal
+    // SELL untuk posisi terbuka tidak boleh di-dedupe (harus selalu bisa memicu exit)
     const key = signalKey(symbol, result.signal, TF, lastTs);
-    if (_sentSignals.has(key)) return null;
+    if (_sentSignals.has(key) && !(result.signal === 'SELL' && hasPosition(symbol))) return null;
 
     _sentSignals.set(key, Date.now());
 
@@ -120,7 +124,7 @@ async function scanSymbol4H(symbol, cfg, _retry = 0) {
  * @param {Array}  tickersOrSymbols  - Daftar ticker/symbol yang akan di-scan
  * @param {object} opts              - Opsi tambahan
  * @param {string} opts.mode         - 'buy_only' | 'sell_only' | 'all' (default: 'all')
- * @param {number} opts.maxSignals   - Batas sinyal (default: dari config)
+ * @param {number} opts.maxSignals   - Batas sinyal BUY (default: dari config)
  */
 export async function runUTBotScreener(tickersOrSymbols, opts = {}) {
   const utCfg = config.screening?.utbot ?? {};
@@ -146,14 +150,20 @@ export async function runUTBotScreener(tickersOrSymbols, opts = {}) {
     })
     .sort((a, b) => parseFloat(b.usdtVol || 0) - parseFloat(a.usdtVol || 0));
 
-  log('utbot', `Scanning ${filtered.length} koin (4H)...`);
+  // Posisi terbuka SELALU di-scan (paling dulu), walau volumenya di bawah filter
+  const openSyms  = getOpenSymbols();
+  const openSet   = new Set(openSyms);
+  const openCoins = openSyms.map(s => cryptoTickers.find(t => t.symbol === s) ?? { symbol: s });
+  const scanList  = [...openCoins, ...filtered.filter(t => !openSet.has(t.symbol))];
+
+  log('utbot', `Scanning ${scanList.length} koin (4H) — ${openCoins.length} posisi terbuka diprioritaskan...`);
 
   const signals  = [];
   let   timeouts = 0;
   const MAX_CONSEC_TIMEOUT = 3;
 
-  for (let i = 0; i < filtered.length; i++) {
-    const coin   = filtered[i];
+  for (let i = 0; i < scanList.length; i++) {
+    const coin   = scanList[i];
     const before = Date.now();
     const result = await scanSymbol4H(coin.symbol, { keyValue, atrPeriod });
     const elapsed = Date.now() - before;
@@ -181,7 +191,9 @@ export async function runUTBotScreener(tickersOrSymbols, opts = {}) {
 
       log('utbot', `  ${result.signal === 'BUY' ? '🟢' : '🔴'} ${result.signal} [4H]: ${result.symbol} @ ${result.close} | TS=${result.trailingStop.toFixed(6)}`);
 
-      if (signals.length >= maxSignals) {
+      // Batas hanya menghitung BUY baru; posisi terbuka (di awal list) sudah pasti ter-scan
+      const buyCount = signals.filter(x => x.signal === 'BUY' && !x.hasPosition).length;
+      if (buyCount >= maxSignals && i >= openCoins.length - 1) {
         log('utbot', `  Max ${maxSignals} sinyal tercapai, berhenti`);
         break;
       }

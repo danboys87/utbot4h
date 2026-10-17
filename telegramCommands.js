@@ -1,5 +1,5 @@
 /**
- * Telegram Command Handler v4.0 — UT Bot Alert 4H
+ * Telegram Command Handler v4.1 — UT Bot Alert 4H
  */
 
 import { log }                 from './logger.js';
@@ -8,7 +8,8 @@ import { getStats, getAllPositions, getOpenSymbols, hasPosition } from './state.
 import { executeSell, executeBuy } from './executor.js';
 import { notifyBuy, notifyAIAnalysis } from './telegram.js';
 import { analyzeOnDemand, getAIStatus } from './aiAnalyst.js';
-import { config, saveConfig }  from './config.js';
+import { config, saveConfig } from './config.js';
+import { getEffectiveSL } from './manager.js';
 
 const getToken  = () => process.env.TELEGRAM_BOT_TOKEN;
 const getChatId = () => process.env.TELEGRAM_CHAT_ID;
@@ -62,9 +63,10 @@ async function buildStatusText(callbacks) {
   const _aiSt    = (() => { try { return getAIStatus(); } catch { return {enabled:false}; } })();
   const cfg      = config;
 
-  let text = `📊 <b>Status Bot v4.0 — UTBot 4H</b>\n`;
+  let text = `📊 <b>Status Bot v4.1 — UTBot 4H</b>\n`;
   text += `Mode      : ${isDryRun ? '🧪 DRY RUN' : '💸 LIVE'}\n`;
   text += `Entry     : ${isAuto ? '🤖 AUTO EXECUTE' : '✋ Manual Approve'}\n`;
+  text += `Exit      : UT Bot SELL${cfg.management?.exitOnUTBotSell !== false ? '' : ' (OFF)'} + Trailing @${cfg.management?.trailingStop?.activateAtProfitPct ?? 10}%\n`;
   text += `AI Analyst: ${_aiSt.enabled ? `🤖 ${_aiSt.provider}/${_aiSt.model}` : '⚠️ set GEMINI_API_KEY'}\n`;
   text += `Screener  : UTBot 4H (key=${cfg.screening?.utbot?.keyValue ?? 2} atr=${cfg.screening?.utbot?.atrPeriod ?? 10})\n`;
   text += `Open Pos  : ${stats.openPositions}/${cfg.trading.maxOpenPositions}\n`;
@@ -81,7 +83,6 @@ async function buildStatusText(callbacks) {
   if (stats.openPositions > 0) {
     text += `\n<b>Posisi Terbuka:</b>\n`;
     for (const [symbol, pos] of Object.entries(positions)) {
-      const hasBEP = pos.partialSells?.some(ps => ps.reason === 'tp1_partial');
       const mgmt   = config.management;
       try {
         const cur   = await getCurrentPrice(symbol);
@@ -89,22 +90,12 @@ async function buildStatusText(callbacks) {
         const usdt  = cur ? ((cur - pos.entryPrice) * pos.quantity) : null;
         const sign  = pnl >= 0 ? '+' : '';
         const emoji = pnl >= 0 ? '🟢' : '🔴';
-        const flags = [hasBEP ? 'BEP✅' : '', pos.trailingActive ? '🔻TRAIL' : ''].filter(Boolean).join(' ');
-        function getEffectiveSL(position, mgmt) {
-         if (position.trailingActive) {
-          return position.entryPrice * (1 + 0.01);   // breakeven + buffer 1% di ATAS entry
-          }
-            if (position.slPrice && position.slPrice > 0) {
-             return position.slPrice;
-              }
-            const slPct = Math.abs(mgmt.stopLossPct ?? 4);
-            return position.entryPrice * (1 - slPct / 100);
-          }
-        const tp1 = pos.tp1Price ?? pos.entryPrice + (pos.entryPrice - effectiveSL) * (mgmt.minRiskReward ?? 2);
+        const flags = pos.trailingActive ? '🔻TRAIL' : '';
+        const effectiveSL = getEffectiveSL(pos, mgmt);
         text += `${emoji} <b>${symbol}</b>${flags ? ' ' + flags : ''}\n`;
         text += `   Entry : ${pos.entryPrice} | Now: ${cur ?? '—'}\n`;
-        text += `   SL    : ${effectiveSL.toFixed(6)}\n`;
-        text += `   TP1   : ${hasBEP ? '✅ done' : tp1.toFixed(6)}\n`;
+        text += `   SL    : ${effectiveSL.toFixed(6)}${pos.trailingActive ? ' (trailing)' : ''}\n`;
+        text += `   Exit  : UT Bot SELL${pos.trailingActive ? ' | Trail peak ' + pos.peakPrice : ''}\n`;
         if (pnl !== null) text += `   PnL   : ${sign}${pnl.toFixed(2)}% (${sign}${usdt.toFixed(2)} USDT)\n`;
       } catch { text += `⚪ ${symbol} | Entry: ${pos.entryPrice}\n`; }
     }
@@ -340,11 +331,11 @@ async function handleCommand(chatId, text, callbacks) {
       const isAuto = config.trading.autoExecute === true;
       const cfg    = config;
       await reply(chatId,
-        `🤖 <b>Bot v4.0 — UT Bot Alert 4H</b>\n\n` +
+        `🤖 <b>Bot v4.1 — UT Bot Alert 4H</b>\n\n` +
         `📡 Screener : UTBot 4H (key=${cfg.screening?.utbot?.keyValue ?? 2} atr=${cfg.screening?.utbot?.atrPeriod ?? 10})\n` +
         `⚙️ Mode     : ${isAuto ? '🤖 AUTO EXECUTE' : '✋ Manual Approve'}\n\n` +
         `<b>📡 Screening:</b>\n` +
-        `/utbot / /screen — Jalankan UTBot 4H (BUY + SELL)\n\n` +
+        `/utbot / /screen — Jalankan UTBot 4H (BUY + exit SELL)\n\n` +
         `<b>⚙️ Entry Mode:</b>\n` +
         `/automode on   — auto execute (langsung beli 100%)\n` +
         `/automode off  — manual approve\n\n` +
@@ -361,7 +352,7 @@ async function handleCommand(chatId, text, callbacks) {
         `/sell SYMBOL     — Jual posisi\n\n` +
         `<b>📊 Monitor:</b>\n` +
         `/status          — Posisi + PnL\n` +
-        `/manage          — Cek TP/SL\n` +
+        `/manage          — Cek SL/Trailing\n` +
         `/stats           — Total PnL\n` +
         `/stop            — Hentikan bot`
       );
@@ -375,7 +366,7 @@ export function startTelegramPolling(callbacks) {
   if (!getToken() || !getChatId()) { log('telegram', 'Telegram tidak dikonfigurasi'); return; }
   if (_polling) return;
   _polling = true;
-  log('telegram', '✅ Telegram polling aktif (v4.0 UTBot 4H)');
+  log('telegram', '✅ Telegram polling aktif (v4.1 UTBot 4H)');
 
   async function poll() {
     if (!_polling) return;

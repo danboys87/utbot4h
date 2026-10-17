@@ -11,9 +11,10 @@ import { log }           from './logger.js';
 import { getCurrentPrice } from './bitget.js';
 import {
   getStats, getAllPositions, getOpenSymbols,
-  hasPosition,
+  hasPosition, getClosedPositions,
 } from './state.js';
 import { config, saveConfig } from './config.js';
+import { getEffectiveSL } from './manager.js';
 import { analyzeOnDemand, getAIStatus, isAIEnabled } from './aiAnalyst.js';
 
 const __dirname  = path.dirname(fileURLToPath(import.meta.url));
@@ -106,7 +107,7 @@ async function handle(req, res) {
       const pnlPct  = price ? ((price - pos.entryPrice) / pos.entryPrice * 100) : null;
       const pnlUsdt = price ? ((price - pos.entryPrice) * pos.quantity) : null;
       const hasBEP  = pos.partialSells?.some(ps => ps.reason === 'tp1_partial');
-      enriched[sym] = { ...pos, currentPrice: price, pnlPct, pnlUsdt, hasBEP };
+      enriched[sym] = { ...pos, currentPrice: price, pnlPct, pnlUsdt, hasBEP, effectiveSL: getEffectiveSL(pos, config.management) };
     }
 
     json(res, {
@@ -135,6 +136,7 @@ async function handle(req, res) {
         takeProfitPct:     config.management.takeProfitPct,
         stopLossPct:       config.management.stopLossPct,
         trailPct:          config.management.trailingStop.trailPct,
+        trailActivatePct:  config.management.trailingStop.activateAtProfitPct,
         isDryRun:          process.env.DRY_RUN === 'true',
         autoExecute:       config.trading.autoExecute === true,
         utbotKeyValue:     config.screening?.utbot?.keyValue,
@@ -151,6 +153,37 @@ async function handle(req, res) {
   // ── GET /api/history ───────────────────────────────────────────────────────
   if (route === '/api/history' && method === 'GET') {
     json(res, { ok: true, trades: getClosedTrades() });
+    return;
+  }
+
+  // ── GET /api/pnl — laporan PnL harian ──────────────────────────────────────
+  if (route === '/api/pnl' && method === 'GET') {
+    const days   = Math.max(1, parseInt(url.searchParams.get('days') || '30'));
+    const since  = Date.now() - days * 86400000;
+    const feePct = config.trading?.feePct ?? 0.1;   // estimasi fee per sisi (%)
+    const trades = getClosedPositions()
+      .filter(t => t.closedAt && new Date(t.closedAt).getTime() >= since)
+      .map(t => {
+        const buyVal  = t.entryPrice * t.quantity;
+        const sellVal = t.exitPrice  * t.quantity;
+        const fee     = (buyVal + sellVal) * feePct / 100;
+        const net     = (t.pnlUsdt ?? (sellVal - buyVal)) - fee;
+        return {
+          symbol:     t.symbol,
+          entryPrice: t.entryPrice,
+          exitPrice:  t.exitPrice,
+          quantity:   t.quantity,
+          pnlPct:     buyVal > 0 ? (net / buyVal) * 100 : 0,
+          pnlUsdt:    net,
+          fee,
+          reason:     t.reason,
+          manual:     String(t.reason || '').startsWith('manual'),
+          openedAt:   t.openedAt,
+          closedAt:   t.closedAt,
+        };
+      })
+      .sort((a, b) => new Date(b.closedAt) - new Date(a.closedAt));
+    json(res, { ok: true, days, feePct, trades });
     return;
   }
 

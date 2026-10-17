@@ -1,11 +1,13 @@
 /**
- * Bitget Spot Trading Bot v4.0 — UTBot 4H Only
+ * Bitget Spot Trading Bot v4.1 — UTBot 4H Only
  * Entry point utama
  *
  * Screener aktif:
  *  - UT Bot Alert 4H: deteksi sinyal BUY dan SELL
  *    BUY  → masuk approval queue atau auto execute
- *    SELL → notifikasi saja (eksekusi via manager)
+ *    SELL → posisi terbuka otomatis ditutup (management.exitOnUTBotSell)
+ *
+ * Manager: Stop Loss + Trailing Stop (aktif di profit 10%, SL min. di entry)
  */
 
 import { createRequire } from 'module';
@@ -20,11 +22,11 @@ import { config }             from './config.js';
 import { testConnection, getCurrentPrice, getAllTickers } from './bitget.js';
 import { runUTBotScreener }             from './screenerUTBot.js';
 import { runManagementCycle }           from './manager.js';
-import { executeBuy }                   from './executor.js';
+import { executeBuy, executeSell }      from './executor.js';
 import { getStats, getOpenSymbols, getAllPositions, initState } from './state.js';
 import { initSymbolFilter } from './symbolFilter.js';
 import {
-  notifyStartup, notifyBuy,
+  notifyStartup, notifyBuy, notifySell,
   notifyScreening, notifyApprovalRequest,
   notifyStats, notifyError, notifyUTBot, notifyUTBotSell,
   isEnabled,
@@ -130,6 +132,28 @@ async function sendApprovalRequests(candidates) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// EXIT MENGIKUTI UT BOT SELL SIGNAL
+// ─────────────────────────────────────────────────────────────────────────────
+async function exitOnUTBotSell(sig) {
+  const pos = getAllPositions()[sig.symbol];
+  if (!pos) return;
+  log('utbot', `  🔴 Exit ${sig.symbol} mengikuti UT Bot SELL @ ${sig.close}`);
+  const result = await executeSell(sig.symbol, { quantity: pos.quantity, reason: 'utbot_sell', position: pos });
+  if (result.success) {
+    await notifySell({
+      symbol:     sig.symbol,
+      entryPrice: pos.entryPrice,
+      exitPrice:  result.exitPrice,
+      pnlPct:     result.pnlPct,
+      pnlUsdt:    result.pnlUsdt,
+      reason:     'utbot_sell',
+    });
+  } else {
+    await notifyError(`Exit UT Bot SELL ${sig.symbol} gagal: ${result.error}`);
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // UTBOT SCREENER — BUY + SELL
 // ─────────────────────────────────────────────────────────────────────────────
 export async function doUTBotScreener() {
@@ -143,20 +167,28 @@ export async function doUTBotScreener() {
     const buySignals  = signals.filter(s => s.signal === 'BUY');
     const sellSignals = signals.filter(s => s.signal === 'SELL');
 
-    // ── Proses SELL signal (hanya notifikasi utk yang punya posisi terbuka) ─
-if (sellSignals.length > 0) {
-  const sellWithPosition = sellSignals.filter(s => s.hasPosition);
-  const sellNoPosition   = sellSignals.filter(s => !s.hasPosition);
+    // ── Proses SELL signal (exit hanya untuk yang punya posisi terbuka) ─────
+    if (sellSignals.length > 0) {
+      const sellWithPosition = sellSignals.filter(s => s.hasPosition);
+      const sellNoPosition   = sellSignals.filter(s => !s.hasPosition);
 
-  if (sellNoPosition.length > 0) {
-    log('utbot', `  Skip ${sellNoPosition.length} SELL (tidak ada posisi): ${sellNoPosition.map(s => s.symbol).join(', ')}`);
-  }
+      if (sellNoPosition.length > 0) {
+        log('utbot', `  Skip ${sellNoPosition.length} SELL (tidak ada posisi): ${sellNoPosition.map(s => s.symbol).join(', ')}`);
+      }
 
-  if (sellWithPosition.length > 0) {
-    log('utbot', `  ${sellWithPosition.length} SELL signal (posisi terbuka) → kirim notifikasi`);
-    await notifyUTBotSell(sellWithPosition);
-  }
-}
+      if (sellWithPosition.length > 0) {
+        log('utbot', `  ${sellWithPosition.length} SELL signal (posisi terbuka): ${sellWithPosition.map(s => s.symbol).join(', ')}`);
+        if (config.management?.exitOnUTBotSell !== false) {
+          for (const s of sellWithPosition) {
+            await exitOnUTBotSell(s);
+            await sleep(500);
+          }
+        } else {
+          await notifyUTBotSell(sellWithPosition);
+        }
+      }
+    }
+
     // ── Proses BUY signal ─────────────────────────────────────────────────
     if (buySignals.length > 0) {
       const eligible = buySignals.filter(s => !s.hasPosition);
@@ -272,7 +304,7 @@ async function showStatus() {
   const isAuto    = config.trading.autoExecute === true;
 
   console.log('\n══════════════════════════════════════');
-  console.log('  📊 STATUS BOT v4.0 — UTBot 4H');
+  console.log('  📊 STATUS BOT v4.1 — UTBot 4H');
   console.log('══════════════════════════════════════');
   console.log(`  Mode     : ${isDryRun ? '🧪 DRY RUN' : '💸 LIVE'}`);
   console.log(`  Entry    : ${isAuto ? '🤖 AUTO EXECUTE' : '✋ MANUAL APPROVE'}`);
@@ -308,7 +340,7 @@ async function showStatus() {
 // REPL
 // ─────────────────────────────────────────────────────────────────────────────
 function startREPL() {
-  const rl = readline.createInterface({ input: process.stdin, output: process.stdout, prompt: '\n[bitget-bot v4.0] > ' });
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout, prompt: '\n[bitget-bot v4.1] > ' });
   console.log('\n📖 Perintah: status | utbot | screen | manage | stats | automode | stop | help\n');
   rl.prompt();
 
@@ -342,8 +374,8 @@ function startREPL() {
         console.log([
           '',
           '  status        — posisi terbuka & PnL',
-          '  utbot / screen— UTBot 4H screening (BUY + SELL)',
-          '  manage        — cek TP/SL semua posisi',
+          '  utbot / screen— UTBot 4H screening (BUY + exit SELL)',
+          '  manage        — cek SL/Trailing semua posisi',
           '  stats         — kirim ringkasan ke Telegram',
           '  automode on   — aktifkan auto execute (langsung beli)',
           '  automode off  — kembali ke manual approve',
@@ -364,7 +396,7 @@ function startREPL() {
 async function main() {
   console.log('');
   console.log('╔══════════════════════════════════════════════════╗');
-  console.log('║  Bitget Spot Bot v4.0 — UT Bot Alert 4H         ║');
+  console.log('║  Bitget Spot Bot v4.1 — UT Bot Alert 4H         ║');
   console.log('╚══════════════════════════════════════════════════╝');
   console.log(`  Mode : ${isDryRun ? '🧪 DRY RUN' : '💸 LIVE TRADING'}`);
   console.log(`  Entry: ${config.trading.autoExecute ? '🤖 AUTO EXECUTE' : '✋ MANUAL APPROVE'}`);
@@ -391,6 +423,8 @@ async function main() {
   log('startup', `  Max posisi   : ${cfg.trading.maxOpenPositions}`);
   log('startup', `  UTBot key    : ${cfg.screening?.utbot?.keyValue ?? 2}`);
   log('startup', `  UTBot ATR    : ${cfg.screening?.utbot?.atrPeriod ?? 10}`);
+  log('startup', `  Exit SELL    : ${cfg.management?.exitOnUTBotSell !== false ? 'ON (ikuti UT Bot SELL)' : 'OFF'}`);
+  log('startup', `  Trailing     : aktif di profit ≥ ${cfg.management?.trailingStop?.activateAtProfitPct ?? 10}% | callback ${cfg.management?.trailingStop?.trailPct ?? 2}% | SL min. di entry`);
   log('startup', `Jadwal:`);
   log('startup', `  UTBot 4H   : setiap ${utbotMin} menit`);
   log('startup', `  Management : setiap ${manageMin} menit`);

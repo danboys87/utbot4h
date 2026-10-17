@@ -128,6 +128,7 @@ export function getPosition(symbol)  { return _state.positions[symbol] || null; 
 export function getAllPositions()     { return _state.positions; }
 export function getOpenSymbols()     { return Object.keys(_state.positions); }
 export function hasPosition(symbol)  { return !!_state.positions[symbol]; }
+export function getClosedPositions() { return _state.closed || []; }
 
 export function getStats() {
   return {
