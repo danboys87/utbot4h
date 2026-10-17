@@ -101,6 +101,9 @@ export async function notifyApprovalRequest({ candidate, timeoutMin }) {
     .join('\n');
 
   const slLine = c.slPrice ? `SL Ref   : ${c.slPrice.toFixed(6)}` : '';
+  const aiLine = c.aiAnalysis
+    ? `🧠 AI      : #${c.aiRank ?? '-'} ${c.aiAnalysis.verdict} (${c.aiAnalysis.confidence}/100)`
+    : '';
 
   const lines = [
     `🔔 <b>Kandidat BUY Ditemukan!</b> — 📡 UT Bot Alert 4H`,
@@ -108,6 +111,7 @@ export async function notifyApprovalRequest({ candidate, timeoutMin }) {
     `Pair     : <b>${c.symbol}</b>`,
     `Harga    : ${c.lastPrice}`,
     `Vol 24h  : $${(c.vol24h / 1e6).toFixed(1)}M`,
+    aiLine,
     ``,
     signalLines ? `<b>✅ Sinyal:</b>\n${signalLines}` : '',
     slLine,
@@ -247,6 +251,29 @@ export async function notifyAIAnalysis(symbol, analysis) {
   await sendLong(msg);
 }
 
+// ── AI Ranking Kandidat ───────────────────────────────────────────────────────
+export async function notifyAIRanking({ macro, results, dropped = [] }) {
+  const dEmoji = { BUY: '🟢', WAIT: '🟡', AVOID: '🔴' };
+  const mEmoji = { RENDAH: '🟢', SEDANG: '🟡', TINGGI: '🔴' }[macro?.risk] ?? '⚪';
+  const lines = [
+    `🧠 <b>AI Ranking Kandidat UT Bot 4H</b>`,
+    ``,
+    `${mEmoji} <b>Risiko Makro: ${macro?.risk ?? '-'}</b>${macro?.searched === false ? ' ⚠️ (tanpa web)' : ''}`,
+    sanitize(macro?.summary),
+    ``,
+  ];
+  for (const r of results) {
+    lines.push(
+      `${r.rank}. ${dEmoji[r.decision] ?? '⚪'} <b>${r.symbol}</b> — ${r.decision} (${r.score}/100)`,
+      `   Sentimen: ${r.sentiment} | Unlock: ${r.unlockRisk}${r.searched === false ? ' ⚠️' : ''}`,
+      `   ${sanitize(r.reason)}`,
+      ``
+    );
+  }
+  if (dropped.length) lines.push(`⛔ Tidak dibeli: ${dropped.join(', ')}`);
+  await sendLong(lines.join('\n'));
+}
+
 // ── SELL Notification ─────────────────────────────────────────────────────────
 export async function notifySell({ symbol, entryPrice, exitPrice, pnlPct, pnlUsdt, reason }) {
   const emoji = pnlPct >= 0 ? '🟢' : '🔴';
@@ -305,6 +332,7 @@ export async function notifyStartup(dryRun) {
     `⏰ Interval : setiap ${utbMin} menit\n` +
     `🚪 Exit     : UT Bot SELL${cfg.management?.exitOnUTBotSell !== false ? '' : ' (OFF)'} + Trailing @${cfg.management?.trailingStop?.activateAtProfitPct ?? 10}%\n` +
     `🤖 AI Analyst : ${getAIInfo()} (manual via /analyze)\n` +
+    `🧠 AI Filter  : ${cfg.ai?.filterEnabled ? `ON (min skor ${cfg.ai?.minScore ?? 60})` : 'OFF'}\n` +
     `Time: ${new Date().toLocaleString('id-ID')}`
   );
 }

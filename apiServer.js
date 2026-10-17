@@ -15,7 +15,7 @@ import {
 } from './state.js';
 import { config, saveConfig } from './config.js';
 import { getEffectiveSL } from './manager.js';
-import { analyzeOnDemand, getAIStatus, isAIEnabled } from './aiAnalyst.js';
+import { analyzeOnDemand, getAIStatus, isAIEnabled, rankCandidates, getLastRanking } from './aiAnalyst.js';
 
 const __dirname  = path.dirname(fileURLToPath(import.meta.url));
 const PORT       = parseInt(process.env.DASHBOARD_PORT || '3000');
@@ -23,6 +23,10 @@ const API_SECRET = process.env.DASHBOARD_SECRET || '';
 
 let _callbacks = {};
 export function setApiCallbacks(cb) { _callbacks = cb; }
+
+// State ranking manual (dijalankan di background, dashboard polling)
+let _rankRunning = false;
+let _rankError   = null;
 
 function json(res, data, status = 200) {
   res.writeHead(status, {
@@ -81,6 +85,40 @@ function getClosedTrades() {
   } catch { return []; }
 }
 
+// Jalankan ranking untuk kandidat di pending queue (background)
+async function runRankOnPending() {
+  _rankRunning = true;
+  _rankError   = null;
+  try {
+    const pending = _callbacks.getPendingQueue?.() ?? [];
+    const cands   = pending.map(p => p.candidate).filter(Boolean);
+    if (!cands.length) { _rankError = 'Tidak ada kandidat di pending queue'; return; }
+
+    const aiCfg  = config.ai ?? {};
+    const batch  = cands.slice(0, aiCfg.maxCandidates ?? 10);
+    const ranked = await rankCandidates(batch, { delayMs: aiCfg.researchDelayMs ?? 4000, source: 'manual (pending queue)' });
+    if (!ranked) { _rankError = 'Ranking AI gagal (cek Bot Logs)'; return; }
+
+    // Tempel hasil ke kandidat (objek yang sama dengan di queue)
+    const bySym = new Map(batch.map(c => [c.symbol, c]));
+    for (const r of ranked.results) {
+      const c = bySym.get(r.symbol);
+      if (!c) continue;
+      c.aiRank = r.rank;
+      c.aiAnalysis = {
+        verdict:    r.decision === 'BUY' ? 'BUY_NOW' : r.decision === 'WAIT' ? 'WAIT' : 'SKIP',
+        confidence: r.score,
+        summary:    `#${r.rank} ${r.reason} (sentimen ${r.sentiment}, unlock ${r.unlockRisk})`,
+      };
+    }
+  } catch (e) {
+    _rankError = e.message;
+    log('ai_analyst_error', `runRankOnPending: ${e.message}`);
+  } finally {
+    _rankRunning = false;
+  }
+}
+
 async function handle(req, res) {
   const url    = new URL(req.url, `http://localhost:${PORT}`);
   const route  = url.pathname;
@@ -125,6 +163,7 @@ async function handle(req, res) {
         slPrice:     p.candidate.slPrice,
         zones:       p.candidate.zones,
         signals:     p.candidate.signals,
+        aiRank:      p.candidate.aiRank,
         aiVerdict:   p.candidate.aiAnalysis?.verdict,
         aiConfidence:p.candidate.aiAnalysis?.confidence,
         aiSummary:   p.candidate.aiAnalysis?.summary,
@@ -142,11 +181,34 @@ async function handle(req, res) {
         utbotKeyValue:     config.screening?.utbot?.keyValue,
         utbotAtrPeriod:    config.screening?.utbot?.atrPeriod,
         utbotIntervalMin:  config.screening?.utbot?.checkIntervalMin,
-        aiEnabled:         !!(process.env.GEMINI_API_KEY || process.env.ANTHROPIC_API_KEY),
+        aiEnabled:         isAIEnabled(),
+        aiFilterEnabled:   config.ai?.filterEnabled === true,
         aiStatus:          (() => { try { return getAIStatus(); } catch { return null; } })(),
       },
       serverTime: new Date().toISOString(),
     });
+    return;
+  }
+
+  // ── GET /api/ranking — hasil ranking AI terakhir ───────────────────────────
+  if (route === '/api/ranking' && method === 'GET') {
+    json(res, {
+      ok:      true,
+      running: _rankRunning,
+      error:   _rankError,
+      ranking: getLastRanking(),
+    });
+    return;
+  }
+
+  // ── POST /api/rank — jalankan ranking untuk pending queue (background) ─────
+  if (route === '/api/rank' && method === 'POST') {
+    if (!isAIEnabled()) { err(res, 'AI tidak aktif. Set API key provider di .env lalu restart bot.'); return; }
+    if (_rankRunning)   { json(res, { ok: true, running: true, message: 'Ranking sedang berjalan' }); return; }
+    const pending = _callbacks.getPendingQueue?.() ?? [];
+    if (!pending.length) { err(res, 'Pending queue kosong. Ranking otomatis berjalan saat screening menemukan sinyal BUY.'); return; }
+    runRankOnPending();
+    json(res, { ok: true, running: true, message: `Ranking ${Math.min(pending.length, config.ai?.maxCandidates ?? 10)} kandidat dimulai` });
     return;
   }
 
@@ -276,7 +338,7 @@ async function handle(req, res) {
   if (route === '/api/analyze' && method === 'POST') {
     const { symbol } = await readBody(req);
     if (!symbol) { err(res, 'symbol required'); return; }
-    if (!isAIEnabled()) { err(res, `AI tidak aktif. Set GEMINI_API_KEY atau ANTHROPIC_API_KEY di .env, lalu restart bot.`); return; }
+    if (!isAIEnabled()) { err(res, `AI tidak aktif. Set OPENROUTER_API_KEY, GEMINI_API_KEY, atau ANTHROPIC_API_KEY di .env sesuai AI_PROVIDER, lalu restart bot.`); return; }
     try {
       const analysis = await analyzeOnDemand(symbol.toUpperCase());
       json(res, { ok: true, symbol, analysis });

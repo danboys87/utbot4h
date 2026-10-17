@@ -27,6 +27,14 @@
       "maxSignalsPerRun": 10
     }
   },
+  "ai": {
+    "filterEnabled": true,
+    "maxCandidates": 10,
+    "minScore": 60,
+    "allowWait": false,
+    "failOpen": false,
+    "researchDelayMs": 4000
+  },
   "management": {
     "stopLossPct": -5,
     "slBuffer": 0.005,

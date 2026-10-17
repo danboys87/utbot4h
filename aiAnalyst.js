@@ -1,6 +1,8 @@
 /**
  * AI Analyst — Multi-Provider
- * Digunakan untuk analisa manual via /analyze SYMBOL dari Telegram.
+ * - analyzeOnDemand : analisa manual via /analyze SYMBOL
+ * - rankCandidates  : filter + ranking kandidat hasil screening UT Bot
+ *                     (sentimen, token unlock, jadwal makro, teknikal)
  *
  * Provider yang didukung (set di .env):
  *   AI_PROVIDER=openrouter
@@ -8,9 +10,14 @@
  *   AI_PROVIDER=claude
  */
 
+import fs   from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { getCandles, getCurrentPrice } from './bitget.js';
 import { calcEMA, calcRSI, calcMACD, calcBollinger, calcADX } from './indicators.js';
 import { log } from './logger.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
@@ -493,4 +500,273 @@ export function getAIStatus() {
       claude:     !!process.env.ANTHROPIC_API_KEY,
     },
   };
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// BATCH FILTER & RANKING — untuk kandidat hasil screening UT Bot
+// ═════════════════════════════════════════════════════════════════════════════
+
+// ── Simpan hasil ranking terakhir (memori + file) untuk dashboard ────────────
+const RANK_FILE = path.join(__dirname, 'logs', 'last-ranking.json');
+let _lastRanking = null;
+
+try {
+  if (fs.existsSync(RANK_FILE)) _lastRanking = JSON.parse(fs.readFileSync(RANK_FILE, 'utf8'));
+} catch {}
+
+function saveLastRanking(data) {
+  _lastRanking = data;
+  try {
+    fs.mkdirSync(path.dirname(RANK_FILE), { recursive: true });
+    fs.writeFileSync(RANK_FILE, JSON.stringify(data, null, 2));
+  } catch (err) {
+    log('ai_analyst_warn', `Gagal simpan last-ranking: ${err.message}`);
+  }
+}
+
+export function getLastRanking() { return _lastRanking; }
+
+function todayWIB() {
+  return new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta', dateStyle: 'full', timeStyle: 'short' });
+}
+
+async function postJsonRetry(url, headers, body, tries = 2) {
+  for (let i = 0; i <= tries; i++) {
+    const res = await fetch(url, { method: 'POST', headers, body: JSON.stringify(body) });
+    if (res.status === 429 && i < tries) {
+      log('ai_analyst_warn', `Rate limit, retry dalam ${(i + 1) * 15}s...`);
+      await sleep((i + 1) * 15000);
+      continue;
+    }
+    if (!res.ok) throw new Error(`${res.status}: ${(await res.text()).slice(0, 200)}`);
+    return res.json();
+  }
+  throw new Error('rate limit');
+}
+
+/**
+ * Panggil AI DENGAN akses web search.
+ * Return { text, searched } — searched=false berarti fallback tanpa web (data tidak terverifikasi).
+ */
+async function callAIWithSearch({ systemPrompt, userPrompt, maxTokens = 900 }) {
+  const provider = getProvider();
+  try {
+    if (provider === 'gemini' && process.env.GEMINI_API_KEY) {
+      const model = process.env.GEMINI_MODEL || 'gemini-2.0-flash';
+      const url   = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${process.env.GEMINI_API_KEY}`;
+      const data  = await postJsonRetry(url, { 'Content-Type': 'application/json' }, {
+        systemInstruction: { parts: [{ text: systemPrompt }] },
+        contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
+        tools: [{ googleSearch: {} }],
+        generationConfig: { maxOutputTokens: maxTokens, temperature: 0.2 },
+      });
+      const text = (data?.candidates?.[0]?.content?.parts || []).map(p => p.text || '').join('').trim();
+      if (text) return { text, searched: true };
+    }
+
+    if (provider === 'claude' && process.env.ANTHROPIC_API_KEY) {
+      const data = await postJsonRetry('https://api.anthropic.com/v1/messages', {
+        'Content-Type': 'application/json',
+        'x-api-key': process.env.ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+      }, {
+        model: getModelName(),
+        max_tokens: maxTokens,
+        system: systemPrompt,
+        tools: [{ type: 'web_search_20250305', name: 'web_search', max_uses: 3 }],
+        messages: [{ role: 'user', content: userPrompt }],
+      });
+      const text = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n').trim();
+      if (text) return { text, searched: true };
+    }
+
+    if (provider === 'openrouter' && process.env.OPENROUTER_API_KEY) {
+      const data = await postJsonRetry('https://openrouter.ai/api/v1/chat/completions', {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        'X-Title': 'Bitget Trading Bot',
+      }, {
+        model: getModelName(),
+        max_tokens: maxTokens,
+        temperature: 0.2,
+        plugins: [{ id: 'web', max_results: 5 }],
+        messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
+      });
+      const text = data?.choices?.[0]?.message?.content?.trim();
+      if (text) return { text, searched: true };
+    }
+  } catch (err) {
+    log('ai_analyst_error', `Search call (${provider}) gagal: ${err.message}`);
+  }
+
+  // Fallback tanpa web — hasil ditandai tidak terverifikasi
+  const text = await callAI({ systemPrompt, userPrompt, maxTokens });
+  return text ? { text, searched: false } : null;
+}
+
+function parseJsonLoose(raw) {
+  if (!raw) return null;
+  const tries = [
+    () => JSON.parse(raw.trim()),
+    () => JSON.parse(raw.replace(/```json|```/g, '').trim()),
+    () => { const m = raw.match(/\{[\s\S]*\}/); return m ? JSON.parse(m[0]) : null; },
+  ];
+  for (const t of tries) { try { const r = t(); if (r) return r; } catch {} }
+  return null;
+}
+
+// ── Ringkasan teknikal singkat per kandidat ──────────────────────────────────
+async function techSummary(c) {
+  try {
+    const md = await buildMarketData(c.symbol);
+    const h4 = md?.['4H'], d1 = md?.['1D'];
+    const riskPct = c.trailingStop && c.close ? ((c.close - c.trailingStop) / c.close * 100).toFixed(1) : 'N/A';
+    const volRatio = h4?.avgVol10 > 0 ? (h4.lastVol / h4.avgVol10).toFixed(2) + 'x' : 'N/A';
+    const d1Trend  = d1?.ema21 ? (d1.currentPrice > d1.ema21 ? 'di ATAS EMA21 1D' : 'di BAWAH EMA21 1D') : 'N/A';
+    return `Close 4H ${c.close} | TrailStop ${c.trailingStop?.toFixed(6)} (jarak risiko ${riskPct}%) | ` +
+           `RSI4H ${h4?.rsi14?.toFixed(1) ?? 'N/A'} | Vol4H ${volRatio} avg10 | Harga ${d1Trend} | ` +
+           `Chg24h ${c.change24h ?? 'N/A'}% | Vol24h $${((c.vol24h || 0) / 1e6).toFixed(1)}M`;
+  } catch {
+    return `Close 4H ${c.close} | TrailStop ${c.trailingStop?.toFixed(6)} | (data teknikal tambahan gagal diambil)`;
+  }
+}
+
+// ── Riset per koin: sentimen + token unlock ──────────────────────────────────
+async function researchCoin(symbol) {
+  const coin = symbol.replace('USDT', '');
+  const systemPrompt =
+`Kamu analis riset crypto. Hari ini: ${todayWIB()} (WIB).
+Gunakan web search untuk data TERBARU. Jangan mengarang: jika tidak menemukan data, tulis "tidak ditemukan".
+Jawab Bahasa Indonesia, MAKS 120 kata, format persis:
+SENTIMEN: POSITIF|NETRAL|NEGATIF — <alasan + berita utama 7 hari terakhir, sebut tanggal>
+UNLOCK: ADA|TIDAK_ADA|TIDAK_DITEMUKAN — <tanggal, jumlah token, % dari circulating supply, dalam 7 hari ke depan>
+EVENT_LAIN: <listing/delisting, upgrade mainnet, hack, gugatan, burn, dll dalam 7 hari ke depan, atau "tidak ada">`;
+  const userPrompt = `Riset ${coin} (${symbol}): berita & sentimen 7 hari terakhir, jadwal token unlock/vesting/emisi dalam 7 hari ke depan sejak hari ini, dan event penting lain yang bisa menekan atau mendorong harga.`;
+  const r = await callAIWithSearch({ systemPrompt, userPrompt, maxTokens: 600 });
+  if (!r) return { text: 'Riset gagal (tidak ada respons AI).', searched: false };
+  return r;
+}
+
+// ── Riset makro (sekali per run) ─────────────────────────────────────────────
+async function researchMacro() {
+  const systemPrompt =
+`Kamu analis makro untuk trader crypto. Hari ini: ${todayWIB()} (WIB).
+Gunakan web search. Jangan mengarang; jika tidak yakin tulis "tidak ditemukan".
+Jawab Bahasa Indonesia, MAKS 150 kata, format persis:
+RISIKO_MAKRO: RENDAH|SEDANG|TINGGI
+JADWAL: daftar event 7 hari ke depan (tanggal + jam WIB jika ada): FOMC/suku bunga, CPI, PPI, NFP/jobless claims, PCE, pidato Fed/ECB/BoJ, keputusan ETF crypto, event regulasi besar, dll
+DAMPAK: 1-2 kalimat bagaimana event tsb bisa mempengaruhi crypto (volatilitas, arah)`;
+  const userPrompt = `Apa jadwal makroekonomi dan event pasar global yang akan terjadi dalam 7 hari ke depan sejak hari ini dan berpotensi mempengaruhi pasar crypto?`;
+  const r = await callAIWithSearch({ systemPrompt, userPrompt, maxTokens: 700 });
+  return r || { text: 'Riset makro gagal.', searched: false };
+}
+
+/**
+ * Filter + ranking kandidat.
+ * @param {Array}  candidates  kandidat BUY (hasil screener UT Bot atau pending queue)
+ * @param {object} opts        { delayMs, source }
+ * @returns {Promise<null | {macro, results: Array}>}  results sudah terurut rank 1..N
+ *   tiap item: { symbol, rank, score, decision, sentiment, unlockRisk, reason, searched }
+ */
+export async function rankCandidates(candidates, opts = {}) {
+  if (!isAIEnabled() || !candidates?.length) return null;
+  const delayMs = opts.delayMs ?? 4000;
+
+  log('ai_analyst', `🧠 AI ranking ${candidates.length} kandidat [${getProvider()}/${getModelName()}]`);
+
+  // 1) makro (sekali)
+  const macro = await researchMacro();
+  log('ai_analyst', `  ✅ Makro ${macro.searched ? '(web)' : '(TANPA web)'}`);
+
+  // 2) per koin: teknikal + riset (sekuensial agar tidak kena rate limit)
+  const blocks = [];
+  for (const c of candidates) {
+    const tech = await techSummary(c);
+    const rs   = await researchCoin(c.symbol);
+    log('ai_analyst', `  ✅ Riset ${c.symbol} ${rs.searched ? '(web)' : '(TANPA web)'}`);
+    blocks.push({ symbol: c.symbol, tech, research: rs.text, searched: rs.searched });
+    await sleep(delayMs);
+  }
+
+  // 3) ranking final (satu panggilan)
+  const systemPrompt =
+`Kamu manajer risiko untuk bot spot trading crypto. Hari ini: ${todayWIB()} (WIB).
+Strategi bot: entry saat UT Bot Alert 4H memberi sinyal BUY, exit saat sinyal SELL atau SL. Holding bisa berhari-hari.
+Tugas: nilai tiap kandidat berdasarkan DATA YANG DIBERIKAN (jangan menambah fakta sendiri), lalu urutkan dari yang paling layak dibeli.
+
+ATURAN KEPUTUSAN:
+- AVOID bila: sentimen NEGATIF kuat/berita buruk material (hack, delisting, gugatan, depeg), ATAU token unlock >=1% circulating supply dalam 7 hari, ATAU RSI4H >78 tanpa volume pendukung.
+- WAIT bila: unlock kecil/dekat tapi belum material, sentimen netral dengan teknikal lemah, jarak risiko trailing stop >12%, atau data riset TIDAK_DITEMUKAN/tanpa web (unlockRisk=UNKNOWN).
+- BUY bila: sentimen positif/netral-positif, tidak ada unlock material, teknikal mendukung.
+- Jika RISIKO_MAKRO TINGGI: turunkan skor semua kandidat 10-20 poin dan jangan beri BUY pada koin berisiko tinggi/volatil.
+- Skor 0-100 (gabungan sentimen 35%, risiko jadwal unlock/event 30%, teknikal 25%, makro 10%).
+- Rank 1 = paling layak. Semua kandidat WAJIB muncul.
+
+KEMBALIKAN JSON VALID SAJA:
+{
+  "macroRisk": "RENDAH"|"SEDANG"|"TINGGI",
+  "macroSummary": "<1-2 kalimat ringkas jadwal makro yang relevan>",
+  "ranking": [
+    { "symbol": "XXXUSDT", "rank": 1, "score": 0-100, "decision": "BUY"|"WAIT"|"AVOID",
+      "sentiment": "POSITIF"|"NETRAL"|"NEGATIF",
+      "unlockRisk": "TIDAK_ADA"|"RENDAH"|"TINGGI"|"UNKNOWN",
+      "reason": "<maks 25 kata, sebut faktor penentu>" }
+  ]
+}`;
+
+  const userPrompt =
+`=== MAKRO (7 hari ke depan) ===
+${macro.text}${macro.searched ? '' : '\n[PERINGATAN: tanpa web search, tidak terverifikasi]'}
+
+=== KANDIDAT (${blocks.length}) ===
+${blocks.map((b, i) => `#${i + 1} ${b.symbol}${b.searched ? '' : ' [riset TANPA web — tidak terverifikasi]'}
+TEKNIKAL: ${b.tech}
+RISET: ${b.research}`).join('\n\n')}
+
+Kembalikan JSON sesuai format.`;
+
+  let parsed = parseJsonLoose(await callAI({ systemPrompt, userPrompt, maxTokens: 2500 }));
+  if (!parsed?.ranking) {
+    log('ai_analyst', '  Retry ranking...');
+    parsed = parseJsonLoose(await callAI({ systemPrompt, userPrompt: 'HANYA JSON valid.\n\n' + userPrompt, maxTokens: 2500 }));
+  }
+  if (!parsed?.ranking?.length) {
+    log('ai_analyst_error', 'Ranking AI gagal / JSON tidak valid');
+    return null;
+  }
+
+  // Gabungkan: kandidat yang tidak dikembalikan AI → WAIT / UNKNOWN
+  const bySym = new Map(parsed.ranking.map(r => [String(r.symbol).toUpperCase(), r]));
+  const results = blocks.map(b => {
+    const r = bySym.get(b.symbol) || {};
+    return {
+      symbol:     b.symbol,
+      rank:       Number.isFinite(r.rank) ? r.rank : 999,
+      score:      Number.isFinite(r.score) ? r.score : 0,
+      decision:   ['BUY', 'WAIT', 'AVOID'].includes(r.decision) ? r.decision : 'WAIT',
+      sentiment:  r.sentiment  || 'NETRAL',
+      unlockRisk: r.unlockRisk || 'UNKNOWN',
+      reason:     r.reason     || 'Tidak dinilai AI',
+      searched:   b.searched,
+    };
+  }).sort((a, b) => a.rank - b.rank || b.score - a.score);
+
+  results.forEach((r, i) => { r.rank = i + 1; }); // normalisasi rank 1..N
+  log('ai_analyst', `  ✅ Ranking selesai: ${results.map(r => `${r.rank}.${r.symbol}(${r.decision}/${r.score})`).join(' ')}`);
+
+  const output = {
+    macro: { risk: parsed.macroRisk || '-', summary: parsed.macroSummary || '', searched: macro.searched },
+    results,
+  };
+
+  // Simpan untuk dashboard
+  saveLastRanking({
+    at:       new Date().toISOString(),
+    source:   opts.source || 'screening',
+    provider: getProvider(),
+    model:    getModelName(),
+    ...output,
+  });
+
+  return output;
 }

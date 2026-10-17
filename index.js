@@ -1,10 +1,10 @@
 /**
- * Bitget Spot Trading Bot v4.1 — UTBot 4H Only
+ * Bitget Spot Trading Bot v4.2 — UTBot 4H + AI Filter & Ranking
  * Entry point utama
  *
  * Screener aktif:
  *  - UT Bot Alert 4H: deteksi sinyal BUY dan SELL
- *    BUY  → masuk approval queue atau auto execute
+ *    BUY  → (opsional) AI filter & ranking → approval queue atau auto execute
  *    SELL → posisi terbuka otomatis ditutup (management.exitOnUTBotSell)
  *
  * Manager: Stop Loss + Trailing Stop (aktif di profit 10%, SL min. di entry)
@@ -29,10 +29,12 @@ import {
   notifyStartup, notifyBuy, notifySell,
   notifyScreening, notifyApprovalRequest,
   notifyStats, notifyError, notifyUTBot, notifyUTBotSell,
+  notifyAIRanking,
   isEnabled,
 } from './telegram.js';
 import { startTelegramPolling, stopTelegramPolling } from './telegramCommands.js';
 import { startApiServer } from './apiServer.js';
+import { isAIEnabled, rankCandidates } from './aiAnalyst.js';
 import {
   addToQueue, setCallbacks, getPendingQueue,
   approveCandidate, skipCandidate,
@@ -132,6 +134,62 @@ async function sendApprovalRequests(candidates) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// AI FILTER & RANKING
+// auto mode   : AVOID (dan WAIT bila allowWait=false) dibuang, sisanya diurutkan
+// manual mode : semua tetap masuk queue, diurutkan + dilabeli (/approve akan
+//               memperingatkan bila AVOID)
+// ─────────────────────────────────────────────────────────────────────────────
+async function applyAIFilter(eligible) {
+  const aiCfg = config.ai ?? {};
+  if (!aiCfg.filterEnabled || !isAIEnabled() || eligible.length === 0) return eligible;
+
+  const isAuto = config.trading.autoExecute === true;
+  const batch  = eligible.slice(0, aiCfg.maxCandidates ?? 10);
+
+  let ranked;
+  try {
+    ranked = await rankCandidates(batch, { delayMs: aiCfg.researchDelayMs ?? 4000, source: 'screening' });
+  } catch (err) {
+    log('ai_analyst_error', `rankCandidates error: ${err.message}`);
+  }
+
+  if (!ranked) {
+    const failOpen = aiCfg.failOpen === true;   // default: AMAN → tidak beli jika AI gagal
+    log('utbot', `  ⚠ AI ranking gagal → ${failOpen ? 'lanjut tanpa filter (failOpen)' : 'kandidat TIDAK diproses'}`);
+    await notifyError(`🧠 AI ranking gagal untuk ${batch.length} kandidat. ${failOpen ? 'Lanjut tanpa filter.' : 'Tidak ada pembelian otomatis siklus ini.'}`);
+    return failOpen ? eligible : (isAuto ? [] : eligible);
+  }
+
+  const minScore  = aiCfg.minScore ?? 60;
+  const allowWait = aiCfg.allowWait === true;
+  const bySym     = new Map(batch.map(c => [c.symbol, c]));
+  const passed = [], dropped = [];
+
+  for (const r of ranked.results) {
+    const cand = bySym.get(r.symbol);
+    if (!cand) continue;
+    // simpan hasil AI di kandidat → dipakai dashboard & peringatan /approve
+    cand.aiRank = r.rank;
+    cand.aiAnalysis = {
+      verdict:    r.decision === 'BUY' ? 'BUY_NOW' : r.decision === 'WAIT' ? 'WAIT' : 'SKIP',
+      confidence: r.score,
+      summary:    `#${r.rank} ${r.reason} (sentimen ${r.sentiment}, unlock ${r.unlockRisk})`,
+    };
+    const ok = r.decision === 'BUY' || (r.decision === 'WAIT' && allowWait);
+    if (ok && r.score >= minScore) passed.push(cand); else dropped.push(r.symbol);
+  }
+
+  await notifyAIRanking({ macro: ranked.macro, results: ranked.results, dropped: isAuto ? dropped : [] });
+
+  if (!isAuto) {
+    // manual: tetap semua masuk queue, urut sesuai rank AI
+    return [...batch].sort((a, b) => (a.aiRank ?? 999) - (b.aiRank ?? 999));
+  }
+  log('utbot', `  🧠 AI: ${passed.length} lolos, ${dropped.length} dibuang (${dropped.join(', ') || '-'})`);
+  return passed; // sudah terurut rank
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // EXIT MENGIKUTI UT BOT SELL SIGNAL
 // ─────────────────────────────────────────────────────────────────────────────
 async function exitOnUTBotSell(sig) {
@@ -207,11 +265,16 @@ export async function doUTBotScreener() {
           log('utbot', `  Slot penuh (${openCount}/${maxPos}), BUY tidak diproses`);
           await notifyError(`📡 UT Bot: ${eligible.length} BUY signal tapi slot posisi penuh (${openCount}/${maxPos})`);
         } else {
-          const toProcess = eligible.slice(0, slotLeft);
           const isAuto    = config.trading.autoExecute === true;
-          log('utbot', `  ${toProcess.length} BUY signal → ${isAuto ? '🤖 auto execute' : 'approval queue'}`);
-          if (!isAuto) await notifyUTBot(buySignals);
-          await sendApprovalRequests(toProcess);
+          const vetted    = await applyAIFilter(eligible);          // ← AI filter & ranking
+          const toProcess = vetted.slice(0, slotLeft);              // top-N sesuai rank AI
+          if (toProcess.length === 0) {
+            log('utbot', '  Tidak ada kandidat yang lolos filter AI');
+          } else {
+            log('utbot', `  ${toProcess.length} BUY signal → ${isAuto ? '🤖 auto execute' : 'approval queue'}`);
+            if (!isAuto) await notifyUTBot(toProcess);
+            await sendApprovalRequests(toProcess);
+          }
         }
       }
     }
@@ -304,10 +367,11 @@ async function showStatus() {
   const isAuto    = config.trading.autoExecute === true;
 
   console.log('\n══════════════════════════════════════');
-  console.log('  📊 STATUS BOT v4.1 — UTBot 4H');
+  console.log('  📊 STATUS BOT v4.2 — UTBot 4H + AI');
   console.log('══════════════════════════════════════');
   console.log(`  Mode     : ${isDryRun ? '🧪 DRY RUN' : '💸 LIVE'}`);
   console.log(`  Entry    : ${isAuto ? '🤖 AUTO EXECUTE' : '✋ MANUAL APPROVE'}`);
+  console.log(`  AI Filter: ${config.ai?.filterEnabled ? (isAIEnabled() ? '🧠 ON' : '⚠ ON tapi API key belum diset') : 'OFF'}`);
   console.log(`  Open Pos : ${stats.openPositions}/${config.trading.maxOpenPositions}`);
   console.log(`  Closed   : ${stats.closedCount}`);
   console.log(`  Total PnL: ${stats.totalPnlUsdt >= 0 ? '+' : ''}${stats.totalPnlUsdt?.toFixed(2)} USDT`);
@@ -315,7 +379,8 @@ async function showStatus() {
   if (pending.length > 0) {
     console.log(`\n  ⏳ Menunggu Approval (${pending.length}):`);
     for (const p of pending) {
-      console.log(`    [UTBot 4H] ${p.symbol} — sisa ${p.minsLeft} menit`);
+      const ai = p.candidate.aiAnalysis ? ` | AI #${p.candidate.aiRank ?? '-'} ${p.candidate.aiAnalysis.verdict} (${p.candidate.aiAnalysis.confidence})` : '';
+      console.log(`    [UTBot 4H] ${p.symbol} — sisa ${p.minsLeft} menit${ai}`);
     }
   }
 
@@ -340,7 +405,7 @@ async function showStatus() {
 // REPL
 // ─────────────────────────────────────────────────────────────────────────────
 function startREPL() {
-  const rl = readline.createInterface({ input: process.stdin, output: process.stdout, prompt: '\n[bitget-bot v4.1] > ' });
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout, prompt: '\n[bitget-bot v4.2] > ' });
   console.log('\n📖 Perintah: status | utbot | screen | manage | stats | automode | stop | help\n');
   rl.prompt();
 
@@ -396,7 +461,7 @@ function startREPL() {
 async function main() {
   console.log('');
   console.log('╔══════════════════════════════════════════════════╗');
-  console.log('║  Bitget Spot Bot v4.1 — UT Bot Alert 4H         ║');
+  console.log('║  Bitget Spot Bot v4.2 — UT Bot 4H + AI Ranking  ║');
   console.log('╚══════════════════════════════════════════════════╝');
   console.log(`  Mode : ${isDryRun ? '🧪 DRY RUN' : '💸 LIVE TRADING'}`);
   console.log(`  Entry: ${config.trading.autoExecute ? '🤖 AUTO EXECUTE' : '✋ MANUAL APPROVE'}`);
@@ -425,6 +490,7 @@ async function main() {
   log('startup', `  UTBot ATR    : ${cfg.screening?.utbot?.atrPeriod ?? 10}`);
   log('startup', `  Exit SELL    : ${cfg.management?.exitOnUTBotSell !== false ? 'ON (ikuti UT Bot SELL)' : 'OFF'}`);
   log('startup', `  Trailing     : aktif di profit ≥ ${cfg.management?.trailingStop?.activateAtProfitPct ?? 10}% | callback ${cfg.management?.trailingStop?.trailPct ?? 2}% | SL min. di entry`);
+  log('startup', `  AI Filter    : ${cfg.ai?.filterEnabled ? `ON (min skor ${cfg.ai?.minScore ?? 60}, allowWait=${cfg.ai?.allowWait === true}, failOpen=${cfg.ai?.failOpen === true})` : 'OFF'}${cfg.ai?.filterEnabled && !isAIEnabled() ? ' ⚠ API key AI belum diset → filter dilewati' : ''}`);
   log('startup', `Jadwal:`);
   log('startup', `  UTBot 4H   : setiap ${utbotMin} menit`);
   log('startup', `  Management : setiap ${manageMin} menit`);
