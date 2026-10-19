@@ -424,7 +424,9 @@ body { font-family: var(--sans); background: var(--bg); color: var(--text); font
 </div>
 
 <script>
-let API = localStorage.getItem('api_url') || 'http://localhost:3000';
+// Bila dibuka lewat server bot (http://host:3000/), API otomatis = origin yang sama
+const _served = location.protocol.startsWith('http');
+let API = _served ? location.origin : (localStorage.getItem('api_url') || 'http://localhost:3000');
 let _data = null;
 let _autoRefresh = null;
 let _autoLog = true;

@@ -133,6 +133,16 @@ async function handle(req, res) {
     err(res, 'Unauthorized', 401); return;
   }
 
+  // ── GET / — sajikan dashboard.html langsung dari server ───────────────────
+  if (method === 'GET' && (route === '/' || route === '/dashboard' || route === '/dashboard.html')) {
+    const file = path.join(__dirname, 'dashboard.html');
+    if (fs.existsSync(file)) {
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+      res.end(fs.readFileSync(file));
+      return;
+    }
+  }
+
   // ── GET /api/status ────────────────────────────────────────────────────────
   if (route === '/api/status' && method === 'GET') {
     const stats     = getStats();
