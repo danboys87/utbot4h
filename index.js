@@ -333,7 +333,7 @@ function startCron() {
   const manageMin = config.schedule?.managementIntervalMin    ?? 10;
   const utbotMin  = config.screening?.utbot?.checkIntervalMin ?? 240;
 
-  const UTBOT_OFFSET_MIN = 5; // jalankan 5 menit setelah candle 4H close, biar data settle dulu
+  const UTBOT_OFFSET_MIN = config.screening?.utbot?.offsetMin ?? 1; // menit setelah candle 4H close (default 1)
 
   const cronManage = intervalToCron(manageMin);
   const cronUtbot  = intervalToCron(utbotMin, UTBOT_OFFSET_MIN);
@@ -342,11 +342,12 @@ function startCron() {
   log('cron', `  UTBot 4H  : ${cronUtbot} → setiap ${utbotMin} menit`);
   log('cron', `  Management: ${cronManage} → setiap ${manageMin} menit`);
 
-  const manageTask = cron.schedule(cronManage, doManagement);
+  // timezone UTC: candle 4H Bitget close di 00/04/08/12/16/20 UTC, apa pun zona waktu server
+  const manageTask = cron.schedule(cronManage, doManagement, { timezone: 'UTC' });
   const utbotTask  = cron.schedule(cronUtbot, () => {
     log('cron', `  UTBot 4H  : ${cronUtbot} → setiap ${utbotMin} menit (offset +${UTBOT_OFFSET_MIN}m setelah candle close)`);
     doUTBotScreener();
-  });
+  }, { timezone: 'UTC' });
 
   _cronTasks = [manageTask, utbotTask];
 }

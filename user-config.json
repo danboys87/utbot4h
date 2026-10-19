@@ -24,7 +24,8 @@
       "timeframe": "4h",
       "checkIntervalMin": 240,
       "minVolume24h": 1000000,
-      "maxSignalsPerRun": 10
+      "maxSignalsPerRun": 10,
+      "offsetMin": 1
     }
   },
   "ai": {
@@ -54,7 +55,7 @@
     "maxSlPct": 0
   },
   "schedule": {
-    "managementIntervalMin": 10
+    "managementIntervalMin": 1
   },
   "blacklist": [
     "USDCUSDT",
