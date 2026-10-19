@@ -1,6 +1,8 @@
 /**
  * Executor
  * Eksekusi order beli/jual ke Bitget Spot API.
+ *
+ * v4.3: SL awal posisi = trailing stop UT Bot (candidate.slPrice) bila management.slMode = 'utbot'.
  */
 import { placeOrder, getOrder, getAssetBalance, getCurrentPrice } from './bitget.js';
 import { config }    from './config.js';
@@ -31,8 +33,25 @@ async function calcQuantity(symbol, budget) {
   return { price, qty };
 }
 
+// ── SL dari UT Bot ───────────────────────────────────────────────────────────
+function useUtbotSL() {
+  return (config.management?.slMode ?? 'utbot') === 'utbot';
+}
+
+/**
+ * Tentukan SL posisi. Mengembalikan null bila slMode bukan 'utbot' atau slPrice tidak ada
+ * (manager lalu memakai fallback stopLossPct).
+ * maxSlPct (opsional, 0 = nonaktif): batasi jarak SL maksimal dari entry.
+ */
+function resolveSL(entryPrice, slPrice) {
+  if (!useUtbotSL() || !slPrice || slPrice <= 0 || slPrice >= entryPrice) return null;
+  const cap = config.management?.maxSlPct ?? 0;
+  if (cap > 0) return Math.max(slPrice, entryPrice * (1 - cap / 100));
+  return slPrice;
+}
+
 export async function executeBuy(candidate) {
-  const { symbol, score, signals } = candidate;
+  const { symbol, score, signals, slPrice, tp1Price } = candidate;
   const budget = candidate.budget || config.trading.budgetPerTrade;
 
   try {
@@ -45,8 +64,16 @@ export async function executeBuy(candidate) {
       return { success: false, error: 'Quantity <= 0' };
     }
 
+    // Harga sudah turun di bawah SL UT Bot sejak sinyal → setup batal, jangan beli
+    if (useUtbotSL() && slPrice && currentPrice <= slPrice) {
+      const msg = `Harga ${currentPrice} sudah di bawah SL UT Bot ${slPrice.toFixed(6)} — beli dibatalkan`;
+      log('executor_error', `${symbol}: ${msg}`);
+      return { success: false, error: msg };
+    }
+
     if (isDryRun) {
-      log('executor', `[DRY RUN] BUY ${symbol} qty=${qty} @ ${currentPrice}`);
+      const sl = resolveSL(currentPrice, slPrice);
+      log('executor', `[DRY RUN] BUY ${symbol} qty=${qty} @ ${currentPrice} | SL=${sl ? sl.toFixed(6) : 'fallback'}`);
       openPosition({
         symbol,
         entryPrice: currentPrice,
@@ -55,9 +82,11 @@ export async function executeBuy(candidate) {
         budget,
         score,
         signals,
+        slPrice:    sl,
+        tp1Price:   tp1Price ?? null,
       });
       logTrade({ side: 'buy', symbol, qty, price: currentPrice, reason: 'dry-run' });
-      return { success: true, entryPrice: currentPrice, quantity: qty, orderId: 'dry-run' };
+      return { success: true, entryPrice: currentPrice, quantity: qty, orderId: 'dry-run', slPrice: sl };
     }
 
     const usdtBalance = await getAssetBalance('USDT');
@@ -84,6 +113,7 @@ export async function executeBuy(candidate) {
     const orderDetail = await getOrder(orderId, symbol).catch(() => null);
     const fillPrice   = orderDetail ? parseFloat(orderDetail.priceAvg || orderDetail.fillPrice || currentPrice) : currentPrice;
     const fillQty     = orderDetail ? parseFloat(orderDetail.baseVolume || orderDetail.fillSize || qty) : qty;
+    const sl          = resolveSL(fillPrice, slPrice);
 
     openPosition({
       symbol,
@@ -93,12 +123,14 @@ export async function executeBuy(candidate) {
       budget,
       score,
       signals,
+      slPrice:    sl,
+      tp1Price:   tp1Price ?? null,
     });
 
     logTrade({ side: 'buy', symbol, qty: fillQty, price: fillPrice, reason: 'screening' });
-    log('executor', `✅ BUY ${symbol} | qty=${fillQty} @ ${fillPrice} | orderId=${orderId}`);
+    log('executor', `✅ BUY ${symbol} | qty=${fillQty} @ ${fillPrice} | SL=${sl ? sl.toFixed(6) : 'fallback'} | orderId=${orderId}`);
 
-    return { success: true, entryPrice: fillPrice, quantity: fillQty, orderId };
+    return { success: true, entryPrice: fillPrice, quantity: fillQty, orderId, slPrice: sl };
 
   } catch (err) {
     log('executor_error', `Beli ${symbol} gagal: ${err.message}`);

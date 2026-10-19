@@ -1,5 +1,13 @@
 /**
- * Manager — TP/SL Management
+ * Manager — SL / Trailing Management
+ *
+ * Aturan (v4.3):
+ *  1. SL awal   : slPrice dari UT Bot (trailing stop - buffer). Bila tidak ada → fallback stopLossPct.
+ *  2. Profit ≥ activateAtProfitPct (10%) → trailing aktif: SL naik ke entry +1%,
+ *     lalu exit bila harga turun trailPct (2%) dari peak.
+ *  3. TP tetap HANYA bila management.useFixedTP = true (default false, supaya trailing bisa jalan).
+ *  4. Exit karena sinyal SELL UT Bot ditangani di index.js (exitOnUTBotSell).
+ *  5. Max hold.
  */
 
 import { getCurrentPrice }  from './bitget.js';
@@ -11,31 +19,44 @@ import {
   updatePeakPrice,
   activateTrailing,
 } from './state.js';
-import { executeSell, executePartialSell } from './executor.js';
+import { executeSell }      from './executor.js';
 import { notifySell }       from './telegram.js';
 
 function sleep(ms) {
   return new Promise(r => setTimeout(r, ms));
 }
 
-function getEffectiveSL(position, mgmt) {
+export function getEffectiveSL(position, mgmt) {
   if (position.trailingActive) {
     return position.entryPrice * (1 + 0.01);   // breakeven + buffer 1% di ATAS entry
   }
-  if (position.slPrice && position.slPrice > 0) {
+  // SL dari UT Bot (hanya valid bila di bawah entry)
+  if (position.slPrice && position.slPrice > 0 && position.slPrice < position.entryPrice) {
     return position.slPrice;
   }
   const slPct = Math.abs(mgmt.stopLossPct ?? 4);
   return position.entryPrice * (1 - slPct / 100);
 }
 
-function getTP1Price(position, effectiveSL) {
-  if (position.tp1Price && position.tp1Price > 0) {
-    return position.tp1Price;
+function getFixedTPPrice(position, mgmt) {
+  if (mgmt.useFixedTP !== true) return null;
+  if (position.tp1Price && position.tp1Price > 0) return position.tp1Price;
+  return position.entryPrice * (1 + (mgmt.takeProfitPct ?? 10) / 100);
+}
+
+async function closeWith(symbol, position, reason) {
+  const result = await executeSell(symbol, { quantity: position.quantity, reason, position });
+  if (result.success) {
+    await notifySell({
+      symbol,
+      entryPrice: position.entryPrice,
+      exitPrice:  result.exitPrice,
+      pnlPct:     result.pnlPct,
+      pnlUsdt:    result.pnlUsdt,
+      reason,
+    });
   }
-  const riskPerUnit = position.entryPrice - effectiveSL;
-  const minRR = config.management?.minRiskReward ?? 2;
-  return position.entryPrice + riskPerUnit * minRR;
+  return result;
 }
 
 async function evaluatePosition(symbol, position) {
@@ -56,72 +77,40 @@ async function evaluatePosition(symbol, position) {
     `trailing=${position.trailingActive ? 'ON' : 'off'}`
   );
 
+  // ── 1. Stop Loss (UT Bot) / Break Even (setelah trailing aktif) ───────────
   const effectiveSL = getEffectiveSL(position, mgmt);
 
   if (currentPrice <= effectiveSL) {
     const slLabel = position.trailingActive ? 'Break Even' : 'Stop Loss';
     log('manager', `🛑 ${slLabel} hit: ${symbol} | price=${currentPrice} SL=${effectiveSL.toFixed(6)}`);
-
-    const result = await executeSell(symbol, {
-      quantity: position.quantity,
-      reason:   position.trailingActive ? 'break_even_sl' : 'stop_loss',
-      position,
-    });
-
-    if (result.success) {
-      await notifySell({
-        symbol,
-        entryPrice: position.entryPrice,
-        exitPrice:  result.exitPrice,
-        pnlPct:     result.pnlPct,
-        pnlUsdt:    result.pnlUsdt,
-        reason:     position.trailingActive ? 'break_even_sl' : 'stop_loss',
-      });
-    }
+    await closeWith(symbol, position, position.trailingActive ? 'break_even_sl' : 'stop_loss');
     return;
   }
 
-  const tp1Price = getTP1Price(position, effectiveSL);
-
-  if (currentPrice >= tp1Price) {
-    log('manager', `🎯 TP1 hit: ${symbol} | price=${currentPrice} TP1=${tp1Price.toFixed(6)} | Close 100%`);
-
-    const result = await executeSell(symbol, {
-      quantity: position.quantity,
-      reason:   'take_profit',
-      position,
-    });
-
-    if (result.success) {
-      await notifySell({
-        symbol,
-        entryPrice: position.entryPrice,
-        exitPrice:  result.exitPrice,
-        pnlPct:     result.pnlPct,
-        pnlUsdt:    result.pnlUsdt,
-        reason:     'take_profit',
-      });
-      log('manager', `✅ TP1 done: ${symbol} closed 100% | PnL=${result.pnlPct?.toFixed(2)}%`);
-    }
+  // ── 2. Take Profit tetap (opsional, default OFF) ──────────────────────────
+  const tpPrice = getFixedTPPrice(position, mgmt);
+  if (tpPrice && currentPrice >= tpPrice) {
+    log('manager', `🎯 TP hit: ${symbol} | price=${currentPrice} TP=${tpPrice.toFixed(6)} | Close 100%`);
+    await closeWith(symbol, position, 'take_profit');
     return;
   }
 
-  const activateAtPct = mgmt.trailingStop?.activateAtProfitPct ?? 4;
-  if (!position.trailingActive && pnlPct >= activateAtPct) {
-    log('manager', `🔻 Trailing aktif: ${symbol} | PnL=${pnlPct.toFixed(2)}% >= ${activateAtPct}% | SL geser ke BEP`);
+  // ── 3. Aktifkan trailing saat profit ≥ threshold ──────────────────────────
+  const activateAtPct = mgmt.trailingStop?.activateAtProfitPct ?? 10;
+  if (mgmt.trailingStop?.enabled !== false && !position.trailingActive && pnlPct >= activateAtPct) {
+    log('manager', `🔻 Trailing aktif: ${symbol} | PnL=${pnlPct.toFixed(2)}% >= ${activateAtPct}% | SL geser ke entry +1%`);
     activateTrailing(symbol);
   }
 
-  if (position.trailingActive) {
-    const ts = mgmt.trailingStop;
-
+  // ── 4. Trailing stop dari peak ────────────────────────────────────────────
+  const fresh = getAllPositions()[symbol];
+  if (fresh?.trailingActive) {
     updatePeakPrice(symbol, currentPrice);
 
-    const allPos = getAllPositions();
-    const pos    = allPos[symbol];
+    const pos = getAllPositions()[symbol];
     if (!pos) return;
 
-    const trailPct     = ts?.trailPct ?? 2;
+    const trailPct     = mgmt.trailingStop?.trailPct ?? 2;
     const dropFromPeak = ((pos.peakPrice - currentPrice) / pos.peakPrice) * 100;
 
     if (dropFromPeak >= trailPct) {
@@ -129,23 +118,7 @@ async function evaluatePosition(symbol, position) {
         `🔻 Trailing Stop: ${symbol} | drop ${dropFromPeak.toFixed(2)}% dari peak ${pos.peakPrice} ` +
         `(callback ${trailPct}%)`
       );
-
-      const result = await executeSell(symbol, {
-        quantity: pos.quantity,
-        reason:   'trailing_stop',
-        position: pos,
-      });
-
-      if (result.success) {
-        await notifySell({
-          symbol,
-          entryPrice: pos.entryPrice,
-          exitPrice:  result.exitPrice,
-          pnlPct:     result.pnlPct,
-          pnlUsdt:    result.pnlUsdt,
-          reason:     'trailing_stop',
-        });
-      }
+      await closeWith(symbol, pos, 'trailing_stop');
       return;
     }
 
@@ -155,26 +128,11 @@ async function evaluatePosition(symbol, position) {
     );
   }
 
+  // ── 5. Max hold ───────────────────────────────────────────────────────────
   const maxHold = mgmt.maxHoldHours ?? 72;
-  if (holdHours >= maxHold) {
+  if (maxHold > 0 && holdHours >= maxHold) {
     log('manager', `⏰ Max hold: ${symbol} sudah ${holdHours.toFixed(1)} jam`);
-
-    const result = await executeSell(symbol, {
-      quantity: position.quantity,
-      reason:   'max_hold_time',
-      position,
-    });
-
-    if (result.success) {
-      await notifySell({
-        symbol,
-        entryPrice: position.entryPrice,
-        exitPrice:  result.exitPrice,
-        pnlPct:     result.pnlPct,
-        pnlUsdt:    result.pnlUsdt,
-        reason:     'max_hold_time',
-      });
-    }
+    await closeWith(symbol, getAllPositions()[symbol] ?? position, 'max_hold_time');
   }
 }
 
