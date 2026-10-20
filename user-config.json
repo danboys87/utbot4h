@@ -1,7 +1,7 @@
 {
   "trading": {
     "quoteAsset": "USDT",
-    "budgetPerTrade": 100,
+    "budgetPerTrade": 50,
     "maxOpenPositions": 5,
     "gasReserve": 3,
     "approvalTimeoutMin": 30,
@@ -34,7 +34,7 @@
     "minScore": 60,
     "allowWait": false,
     "failOpen": false,
-    "researchDelayMs": 4000
+    "researchDelayMs": 10000
   },
   "management": {
     "stopLossPct": -5,
@@ -45,9 +45,9 @@
       "activateAfterTP1": true,
       "activateAtProfitPct": 10,
       "breakevenBufferPct": 0,
-      "trailPct": 2
+      "trailPct": 3
     },
-    "maxHoldHours": 120,
+    "maxHoldHours": 0,
     "takeProfitPct": 10,
     "useFixedTP": false,
     "exitOnUTBotSell": true,
