@@ -24,13 +24,13 @@
       "timeframe": "4h",
       "checkIntervalMin": 240,
       "minVolume24h": 1000000,
-      "maxSignalsPerRun": 10,
+      "maxSignalsPerRun": 5,
       "offsetMin": 1
     }
   },
   "ai": {
     "filterEnabled": true,
-    "maxCandidates": 10,
+    "maxCandidates": 5,
     "minScore": 60,
     "allowWait": false,
     "failOpen": false,
