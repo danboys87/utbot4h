@@ -2,7 +2,8 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
 <title>Bitget Bot — Trading Desk</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -30,7 +31,7 @@
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: var(--sans); background: var(--bg); color: var(--text); font-size: 13px; line-height: 1.5; min-height: 100vh; }
-.app { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+.app { display: flex; flex-direction: column; height: 100vh; height: 100dvh; overflow: hidden; }
 .topbar { display: flex; align-items: center; gap: 12px; padding: 0 20px; height: 48px; background: var(--surface); border-bottom: 1px solid var(--border); flex-shrink: 0; flex-wrap: nowrap; }
 .topbar-logo { font-family: var(--mono); font-size: 13px; font-weight: 500; letter-spacing: .04em; color: var(--text); display: flex; align-items: center; gap: 8px; white-space: nowrap; }
 .topbar-logo span { opacity: .4; }
@@ -111,7 +112,6 @@ body { font-family: var(--sans); background: var(--bg); color: var(--text); font
 .toast.err { background: var(--red); }
 @keyframes slideIn { from { transform: translateX(20px); opacity: 0; } to { transform: none; opacity: 1; } }
 @media (max-width: 1200px) { .stats-row { grid-template-columns: repeat(3, 1fr); } }
-@media (max-width: 900px) { .sidenav { display: none; } .stats-row { grid-template-columns: repeat(2, 1fr); } }
 .page { display: none; }
 .page.active { display: flex; flex-direction: column; gap: 16px; }
 .spin { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .6s linear infinite; vertical-align: middle; }
@@ -133,35 +133,128 @@ body { font-family: var(--sans); background: var(--bg); color: var(--text); font
 .reason-cell { font-family: var(--sans) !important; font-size: 12px !important; max-width: 340px; line-height: 1.5; }
 .ai-chip { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 
+
+/* ═══════════════ RESPONSIVE / MOBILE ═══════════════ */
+.hamburger, .api-toggle { display: none; }
+.topbar-chips { display: contents; }
+.api-box { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.topbar-right { margin-left: 0; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grid-2.gap20 { gap: 20px; }
+.stats-3 { grid-template-columns: repeat(3, 1fr); }
+.only-m { display: none; }
+.nav-backdrop { display: none; }
+.tbl-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+@media (max-width: 900px) {
+  .hamburger { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; padding: 0; font-size: 18px; line-height: 1; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--text); cursor: pointer; flex-shrink: 0; }
+  .api-toggle { display: inline-block; }
+
+  /* Topbar: 2-3 baris */
+  .topbar { height: auto; min-height: 48px; flex-wrap: wrap; gap: 8px 10px; padding: calc(8px + env(safe-area-inset-top)) 12px 8px; }
+  .topbar-sep, .logo-sub, #lastUpdate { display: none; }
+  .conn-wrap { margin-left: auto; }
+  .topbar-chips { display: flex; order: 5; width: 100%; gap: 16px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .topbar-chips::-webkit-scrollbar { display: none; }
+  .topbar-chips .topbar-status { flex-shrink: 0; }
+  .api-box { display: none; order: 6; width: 100%; margin-left: 0; }
+  .topbar.api-open .api-box { display: flex; }
+  .api-box .api-input { flex: 1; width: auto; min-width: 0; }
+
+  /* Sidebar -> drawer */
+  .sidenav { position: fixed; top: 0; left: 0; bottom: 0; z-index: 200; width: 250px; overflow-y: auto; transform: translateX(-100%); transition: transform .2s ease; padding-top: calc(12px + env(safe-area-inset-top)); }
+  .sidenav.open { transform: none; box-shadow: 4px 0 24px rgba(0,0,0,.2); }
+  .nav-backdrop.show { display: block; position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 150; }
+  .nav-item { padding: 13px 18px; font-size: 13px; }
+
+  /* Konten */
+  .content { padding: 12px 12px calc(16px + env(safe-area-inset-bottom)); gap: 12px; }
+  .stats-row { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .stat-card { padding: 12px; }
+  .stat-value { font-size: 17px; word-break: break-word; }
+  .stat-sub { font-size: 10px; }
+  .stats-3 { grid-template-columns: repeat(2, 1fr); }
+  .stats-3 .stat-card:first-child { grid-column: 1 / -1; }
+  .grid-2 { grid-template-columns: 1fr; }
+  .config-grid { grid-template-columns: 1fr; padding: 12px; }
+  .panel-header { flex-wrap: wrap; gap: 8px; padding: 10px 12px; }
+  .panel-actions { flex-wrap: wrap; }
+  .macro-box { flex-wrap: wrap; }
+  .tbl th, .tbl td { padding: 8px 10px; }
+  .empty { padding: 28px 14px; }
+
+  /* Tombol & input (target sentuh, cegah zoom iOS) */
+  .btn { padding: 8px 14px; min-height: 36px; }
+  .btn.sm { padding: 7px 10px; min-height: 32px; }
+  .field input, .field select, .api-input, #whitelist-editor { font-size: 16px !important; }
+  .pc-actions .btn { flex: 1 1 calc(50% - 6px); }
+
+  .modal { min-width: 0; width: 92vw; padding: 16px; }
+  .log-box { height: 60vh; }
+  .toast-area { left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); }
+  .toast { max-width: none; }
+}
+
+/* Tabel -> kartu di layar kecil */
+@media (max-width: 700px) {
+  .tbl.cards thead { display: none; }
+  .tbl.cards, .tbl.cards tbody, .tbl.cards tr { display: block; width: 100%; }
+  .tbl.cards tr { padding: 10px 14px; border-bottom: 1px solid var(--border); }
+  .tbl.cards tr:last-child { border-bottom: none; }
+  .tbl.cards tr:hover td { background: transparent; }
+  .tbl.cards td { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 5px 0; border: none; text-align: right; }
+  .tbl.cards td::before { content: attr(data-label); flex-shrink: 0; text-align: left; font-family: var(--sans); font-size: 10px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+  .tbl.cards td:not([data-label])::before { content: none; }
+  .tbl.cards td.c-title { display: block; text-align: left; font-size: 14px; padding-bottom: 6px; }
+  .tbl.cards td.c-actions { justify-content: flex-start; text-align: left; padding-top: 8px; }
+  .tbl.cards td.c-hide { display: none; }
+  .tbl.cards td.empty { display: block; text-align: center; padding: 28px 14px; }
+  .tbl.cards td.reason-cell { display: block; max-width: none; text-align: left; }
+  .tbl.cards td.reason-cell::before { display: block; margin-bottom: 2px; }
+  .tbl.cards .only-m { display: inline; }
+}
+
+@media (max-width: 900px) {
+  #pending-cards { padding: 10px !important; }
+  #pending-cards .badge { white-space: normal; max-width: 100%; line-height: 1.4; }
+}
+@media (max-width: 360px) {
+  #connLabel { display: none; }
+}
 </style>
 </head>
 <body>
+<div class="nav-backdrop" id="navBackdrop" onclick="closeNav()"></div>
 <div class="app">
 
 <header class="topbar">
-  <div class="topbar-logo"><span>▣</span> BITGET BOT <span>/ TRADING DESK</span></div>
+  <button class="hamburger" onclick="toggleNav()" aria-label="Menu">☰</button>
+  <div class="topbar-logo"><span>▣</span> BITGET BOT <span class="logo-sub">/ TRADING DESK</span></div>
   <div class="topbar-sep"></div>
-  <div class="topbar-status"><div class="dot" id="connDot"></div><span id="connLabel">Menghubungkan...</span></div>
-  <div class="topbar-sep"></div>
-  <div class="topbar-status"><span id="modeLabel">—</span></div>
-  <div class="topbar-sep"></div>
-  <div class="topbar-status">AI: <span id="aiLabel">—</span></div>
-  <div class="topbar-sep"></div>
-  <div class="topbar-status">Filter: <span id="aiFilterLabel">—</span></div>
-  <div class="topbar-sep"></div>
-  <div class="topbar-status">Mode: <span class="mode-badge manual" id="entryModeBadge">Manual</span></div>
-
-  <div class="topbar-right">
+  <div class="topbar-status conn-wrap"><div class="dot" id="connDot"></div><span id="connLabel">Menghubungkan...</span></div>
+  <div class="topbar-chips">
+    <div class="topbar-sep"></div>
+    <div class="topbar-status"><span id="modeLabel">—</span></div>
+    <div class="topbar-sep"></div>
+    <div class="topbar-status">AI: <span id="aiLabel">—</span></div>
+    <div class="topbar-sep"></div>
+    <div class="topbar-status">Filter: <span id="aiFilterLabel">—</span></div>
+    <div class="topbar-sep"></div>
+    <div class="topbar-status">Mode: <span class="mode-badge manual" id="entryModeBadge">Manual</span></div>
+  </div>
+  <div class="api-box">
     <input class="api-input" id="apiUrl" placeholder="http://localhost:3000" value="http://localhost:3000">
     <button class="btn primary" onclick="connect()">Connect</button>
+  </div>
+  <div class="topbar-right">
+    <button class="btn api-toggle" onclick="this.closest('.topbar').classList.toggle('api-open')" title="API URL">⚙</button>
     <button class="btn" onclick="refreshAll()" title="Refresh data"><span id="refreshIcon">↻</span></button>
     <span style="font-family:var(--mono);font-size:11px;color:var(--muted)" id="lastUpdate"></span>
   </div>
 </header>
 
-
 <div class="body">
-<nav class="sidenav">
+<nav class="sidenav" id="sidenav">
   <div class="nav-section">Monitor</div>
   <div class="nav-item active" onclick="showPage('overview')"><span class="nav-icon">◈</span> Overview</div>
   <div class="nav-item" onclick="showPage('positions')"><span class="nav-icon">◎</span> Positions</div>
@@ -192,7 +285,7 @@ body { font-family: var(--sans); background: var(--bg); color: var(--text); font
   </div>
   <div class="panel">
     <div class="panel-header"><div class="panel-title">◎ Open Positions</div><div class="panel-actions"><button class="btn sm" onclick="showPage('positions')">View All →</button></div></div>
-    <table class="tbl" id="ov-positions-tbl">
+    <table class="tbl cards" id="ov-positions-tbl">
       <thead><tr><th>Symbol</th><th>Entry</th><th>Current</th><th>PnL %</th><th>PnL USDT</th><th>Status</th><th>Hold</th><th>Action</th></tr></thead>
       <tbody id="ov-positions-body"><tr><td colspan="8" class="empty">Tidak ada posisi terbuka</td></tr></tbody>
     </table>
@@ -205,7 +298,7 @@ body { font-family: var(--sans); background: var(--bg); color: var(--text); font
         <button class="btn sm" onclick="showPage('pending')">View All →</button>
       </div>
     </div>
-    <table class="tbl">
+    <table class="tbl cards">
       <thead><tr><th>Symbol</th><th>Price</th><th>Vol 24h</th><th>AI</th><th>Sisa</th><th>Action</th></tr></thead>
       <tbody id="ov-pending-body"><tr><td colspan="6" class="empty">Tidak ada kandidat pending</td></tr></tbody>
     </table>
@@ -216,7 +309,7 @@ body { font-family: var(--sans); background: var(--bg); color: var(--text); font
 <div class="page" id="page-positions">
   <div class="panel">
     <div class="panel-header"><div class="panel-title">◎ Open Positions — Detail</div><div class="panel-actions"><button class="btn sm" onclick="refreshAll()">↻ Refresh</button></div></div>
-    <table class="tbl">
+    <table class="tbl cards">
       <thead><tr><th>Symbol</th><th>Entry Price</th><th>Current</th><th>PnL %</th><th>PnL USDT</th><th>Qty</th><th>SL</th><th>Status</th><th>Opened</th><th>Action</th></tr></thead>
       <tbody id="pos-body"><tr><td colspan="10" class="empty">Tidak ada posisi terbuka</td></tr></tbody>
     </table>
@@ -240,7 +333,7 @@ body { font-family: var(--sans); background: var(--bg); color: var(--text); font
 
 <!-- ═══════════════ PAGE: TRADE ════════════════════════════════════════════ -->
 <div class="page" id="page-trade">
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+  <div class="grid-2">
     <div class="panel">
       <div class="panel-header"><div class="panel-title">▲ Manual Buy</div></div>
       <div style="padding:20px;display:flex;flex-direction:column;gap:14px">
@@ -323,7 +416,7 @@ body { font-family: var(--sans); background: var(--bg); color: var(--text); font
       </div>
     </div>
     <div id="rank-macro" class="macro-box" style="display:none"></div>
-    <table class="tbl">
+    <table class="tbl cards">
       <thead><tr><th>#</th><th>Symbol</th><th>Keputusan</th><th>Skor</th><th>Sentimen</th><th>Token Unlock</th><th>Alasan</th><th>Aksi</th></tr></thead>
       <tbody id="rank-body"><tr><td colspan="8" class="empty">Belum ada hasil ranking</td></tr></tbody>
     </table>
@@ -341,10 +434,10 @@ body { font-family: var(--sans); background: var(--bg); color: var(--text); font
       <div style="font-size:12px;color:var(--muted);line-height:1.7">
         Analisa manual untuk symbol apapun. AI akan mengevaluasi UTBot signal, trend alignment 3 timeframe, dan sentiment market terkini.
       </div>
-      <div style="display:flex;gap:10px">
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
         <input id="ai-symbol" class="api-input" style="width:180px;font-size:13px;padding:8px 12px" placeholder="BTCUSDT">
         <button class="btn primary" onclick="doAnalyze()" id="analyzeBtn">Analyze</button>
-        <span style="color:var(--muted);font-size:12px;align-self:center">Estimasi 30–60 detik</span>
+        <span style="color:var(--muted);font-size:12px;align-self:center">Estimasi 1–2 menit</span>
       </div>
     </div>
   </div>
@@ -356,7 +449,7 @@ body { font-family: var(--sans); background: var(--bg); color: var(--text); font
 
 <!-- ═══════════════ PAGE: HISTORY (Laporan PnL Harian) ════════════════════ -->
 <div class="page" id="page-history">
-  <div class="stats-row" id="pnl-summary" style="grid-template-columns:repeat(3,1fr)"></div>
+  <div class="stats-row stats-3" id="pnl-summary"></div>
   <div class="panel">
     <div class="panel-header">
       <div class="panel-title">▦ PnL Harian</div>
@@ -370,10 +463,12 @@ body { font-family: var(--sans); background: var(--bg); color: var(--text); font
         <button class="btn" onclick="loadHistory()">↻ Refresh</button>
       </div>
     </div>
+    <div class="tbl-scroll">
     <table class="tbl">
       <thead><tr><th>Tanggal</th><th>Deal Ditutup</th><th>Win Rate</th><th>PnL (USDT)</th></tr></thead>
       <tbody id="pnl-body"><tr><td colspan="4" class="empty">Memuat laporan...</td></tr></tbody>
     </table>
+    </div>
     <div id="pnl-note" style="padding:12px 16px;border-top:1px solid var(--border);font-size:11px;color:var(--muted)">
       ℹ️ Klik baris tanggal untuk lihat detail deal. Deal yang ditutup lewat <b>Manual Sell</b> ikut tercatat tetapi PnL-nya tidak dihitung ke Total PnL / Win Rate. Fee = estimasi.
     </div>
@@ -458,10 +553,13 @@ async function refreshAll() {
   document.getElementById('lastUpdate').textContent = 'Updated ' + new Date().toLocaleTimeString('id-ID');
 }
 
+// Parse aman: respons kosong / bukan JSON (mis. diputus proxy) -> error yang jelas
 async function apiFetch(path, opts = {}) {
   const secret = localStorage.getItem('api_secret') || '';
   const res = await fetch(API + path, { headers: { 'Content-Type': 'application/json', 'X-Secret': secret, ...opts.headers }, ...opts });
-  return res.json();
+  const text = await res.text();
+  try { return JSON.parse(text); }
+  catch { throw new Error(`Respons server kosong/tidak valid (HTTP ${res.status})`); }
 }
 
 async function apiPost(path, body) {
@@ -569,12 +667,12 @@ function posRow(sym, p) {
   const holdH   = ((Date.now() - new Date(p.openedAt)) / 3600000).toFixed(1);
   const status  = [hasBEP && '<span class="badge green">BEP</span>', trail && '<span class="badge blue">TRAIL</span>'].filter(Boolean).join(' ') || '<span class="badge gray">ACTIVE</span>';
   return `<tr>
-    <td><b>${sym}</b><br><span style="color:var(--muted);font-size:10px">UTBot 4H</span></td>
-    <td>${p.entryPrice}</td><td>${p.currentPrice ?? '—'}</td>
-    <td><span class="badge ${cls}">${sign}${pnlPct?.toFixed(2) ?? '—'}%</span></td>
-    <td style="color:var(--${cls})">${sign}${pnlUsdt?.toFixed(2) ?? '—'} USDT</td>
-    <td>${status}</td><td>${holdH}h</td>
-    <td><button class="btn sm danger" onclick="quickSell('${sym}')">Sell</button></td>
+    <td class="c-title"><b>${sym}</b><br><span style="color:var(--muted);font-size:10px">UTBot 4H</span></td>
+    <td data-label="Entry">${p.entryPrice}</td><td data-label="Current">${p.currentPrice ?? '—'}</td>
+    <td data-label="PnL %"><span class="badge ${cls}">${sign}${pnlPct?.toFixed(2) ?? '—'}%</span></td>
+    <td data-label="PnL USDT" style="color:var(--${cls})">${sign}${pnlUsdt?.toFixed(2) ?? '—'} USDT</td>
+    <td data-label="Status">${status}</td><td data-label="Hold">${holdH}h</td>
+    <td class="c-actions"><button class="btn sm danger" onclick="quickSell('${sym}')">Sell</button></td>
   </tr>`;
 }
 
@@ -585,19 +683,18 @@ function posRowFull(sym, p) {
   const cls     = pnlPct >= 0 ? 'green' : 'red';
   const hasBEP  = p.hasBEP;
   const trail   = p.trailingActive;
-  const holdH   = ((Date.now() - new Date(p.openedAt)) / 3600000).toFixed(1);
   const openedAt = new Date(p.openedAt).toLocaleString('id-ID');
   const status  = [hasBEP && '<span class="badge green">BEP✓</span>', trail && '<span class="badge blue">🔻TRAIL</span>'].filter(Boolean).join(' ') || '<span class="badge gray">ACTIVE</span>';
   return `<tr>
-    <td><b>${sym}</b></td>
-    <td>${p.entryPrice}</td><td>${p.currentPrice ?? '—'}</td>
-    <td><span class="badge ${cls}">${sign}${pnlPct?.toFixed(2) ?? '—'}%</span></td>
-    <td style="color:var(--${cls})">${sign}${pnlUsdt?.toFixed(2) ?? '—'}</td>
-    <td>${p.quantity}</td>
-    <td style="color:var(--red)">${(p.effectiveSL ?? p.slPrice)?.toFixed(6) ?? '—'}</td>
-    <td>${status}</td>
-    <td style="font-size:10px">${openedAt}</td>
-    <td><button class="btn sm danger" onclick="quickSell('${sym}')">Sell</button></td>
+    <td class="c-title"><b>${sym}</b></td>
+    <td data-label="Entry">${p.entryPrice}</td><td data-label="Current">${p.currentPrice ?? '—'}</td>
+    <td data-label="PnL %"><span class="badge ${cls}">${sign}${pnlPct?.toFixed(2) ?? '—'}%</span></td>
+    <td data-label="PnL USDT" style="color:var(--${cls})">${sign}${pnlUsdt?.toFixed(2) ?? '—'}</td>
+    <td data-label="Qty">${p.quantity}</td>
+    <td data-label="SL" style="color:var(--red)">${(p.effectiveSL ?? p.slPrice)?.toFixed(6) ?? '—'}</td>
+    <td data-label="Status">${status}</td>
+    <td data-label="Opened" style="font-size:10px">${openedAt}</td>
+    <td class="c-actions"><button class="btn sm danger" onclick="quickSell('${sym}')">Sell</button></td>
   </tr>`;
 }
 
@@ -619,10 +716,12 @@ function renderOvPending(pending) {
   const sorted = [...pending].sort((a, b) => (a.aiRank ?? 999) - (b.aiRank ?? 999));
   tbody.innerHTML = sorted.map(p => {
     return `<tr>
-      <td><b>${p.symbol}</b></td><td>${p.lastPrice}</td>
-      <td>$${((p.vol24h||0)/1e6).toFixed(1)}M</td>
-      <td>${aiBadge(p)}</td><td>${p.minsLeft}m</td>
-      <td><div class="action-group">
+      <td class="c-title"><b>${p.symbol}</b></td>
+      <td data-label="Price">${p.lastPrice}</td>
+      <td data-label="Vol 24h">$${((p.vol24h||0)/1e6).toFixed(1)}M</td>
+      <td data-label="AI">${aiBadge(p)}</td>
+      <td data-label="Sisa">${p.minsLeft}m</td>
+      <td class="c-actions"><div class="action-group">
         <button class="btn sm success" onclick="approve('${p.symbol}','entry1')">E1</button>
         <button class="btn sm" onclick="approve('${p.symbol}','entry2')">E2</button>
         <button class="btn sm primary" onclick="approve('${p.symbol}','all')">All</button>
@@ -664,7 +763,7 @@ function renderPendingPage(pending) {
         ${p.slPrice ? `<div style="margin-top:8px;font-family:var(--mono);font-size:11px;color:var(--red)">SL ref: ${p.slPrice?.toFixed(6)}</div>` : ''}
         ${aiBlock}
       </div>
-      <div style="padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:6px;flex-wrap:wrap">
+      <div class="pc-actions" style="padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:6px;flex-wrap:wrap">
         <button class="btn success" onclick="approve('${p.symbol}','entry1')">▲ Entry 1 (55%)</button>
         <button class="btn" onclick="approve('${p.symbol}','entry2')">Entry 2 (45%)</button>
         <button class="btn primary" onclick="approve('${p.symbol}','all')">Full (100%)</button>
@@ -749,14 +848,14 @@ function renderRanking(res) {
          </div>`
       : '<span style="color:var(--muted);font-size:11px">—</span>';
     return `<tr>
-      <td><span class="rank-no">${x.rank}</span></td>
-      <td><b>${escHtml(x.symbol)}</b></td>
-      <td><span class="badge ${DECISION_CLS[x.decision] || 'gray'}">${escHtml(x.decision)}</span></td>
-      <td><span class="sbar ${scc}"><i style="width:${sc}%"></i></span>${sc}</td>
-      <td><span class="badge ${SENTIMENT_CLS[x.sentiment] || 'gray'}">${escHtml(x.sentiment)}</span></td>
-      <td><span class="badge ${UNLOCK_CLS[x.unlockRisk] || 'gray'}">${escHtml(x.unlockRisk)}</span>${x.searched === false ? ' <span title="Tanpa web search — tidak terverifikasi">⚠️</span>' : ''}</td>
-      <td class="reason-cell">${escHtml(x.reason)}</td>
-      <td>${act}</td>
+      <td class="c-hide"><span class="rank-no">${x.rank}</span></td>
+      <td class="c-title"><span class="only-m rank-no">#${x.rank}</span> <b>${escHtml(x.symbol)}</b></td>
+      <td data-label="Keputusan"><span class="badge ${DECISION_CLS[x.decision] || 'gray'}">${escHtml(x.decision)}</span></td>
+      <td data-label="Skor"><span class="sbar ${scc}"><i style="width:${sc}%"></i></span>${sc}</td>
+      <td data-label="Sentimen"><span class="badge ${SENTIMENT_CLS[x.sentiment] || 'gray'}">${escHtml(x.sentiment)}</span></td>
+      <td data-label="Token Unlock"><span class="badge ${UNLOCK_CLS[x.unlockRisk] || 'gray'}">${escHtml(x.unlockRisk)}</span>${x.searched === false ? ' <span title="Tanpa web search — tidak terverifikasi">⚠️</span>' : ''}</td>
+      <td class="reason-cell" data-label="Alasan">${escHtml(x.reason)}</td>
+      <td class="c-actions">${act}</td>
     </tr>`;
   }).join('');
 }
@@ -787,12 +886,12 @@ function renderAIReport(analysis, container) {
 
   container.innerHTML = `
   <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:14px">
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border)">
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border)">
       <span class="badge ${vmap[analysis.verdict]||'gray'}" style="font-size:13px;padding:5px 12px">${analysis.verdict}</span>
       <span style="font-family:var(--mono);font-size:13px">${bar} ${analysis.confidence}%</span>
       <span style="font-size:12px;color:var(--muted)">${analysis.summary || ''}</span>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+    <div class="grid-2 gap20">
       <div>
         <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">🚀 Validasi Momentum</div>
         <div style="font-family:var(--mono);font-size:11px;line-height:1.8">
@@ -911,25 +1010,41 @@ async function doManage() {
   toast('⚙ Management cycle dimulai');
 }
 
+// Analisa berjalan di background server; browser polling tiap 3 detik
+// (kebal terhadap timeout proxy/tunnel pada request yang lama)
 async function doAnalyze() {
   const sym = document.getElementById('ai-symbol').value.trim().toUpperCase();
   if (!sym) { toast('Masukkan symbol', 'err'); return; }
-  const btn = document.getElementById('analyzeBtn');
+  const btn  = document.getElementById('analyzeBtn');
+  const body = document.getElementById('ai-result-body');
   btn.disabled = true;
   btn.innerHTML = '<span class="spin"></span> Analyzing...';
-  const res = document.getElementById('ai-result');
-  res.style.display = 'block';
+  document.getElementById('ai-result').style.display = 'block';
   document.getElementById('ai-result-title').textContent = `🤖 AI Report — ${sym}`;
-  document.getElementById('ai-result-body').innerHTML = '<div class="empty"><span class="spin"></span> Menganalisa ' + sym + '... (30-60 detik)</div>';
+  body.innerHTML = `<div class="empty"><span class="spin"></span> Menganalisa ${escHtml(sym)}... (1–2 menit)</div>`;
+
   try {
-    const data = await apiPost('/api/analyze', { symbol: sym });
-    if (data.ok) { renderAIReport(data.analysis, document.getElementById('ai-result-body')); }
-    else { document.getElementById('ai-result-body').innerHTML = `<div class="empty" style="color:var(--red)">Error: ${data.error}</div>`; }
+    const start = await apiPost('/api/analyze', { symbol: sym });
+    if (!start.ok) throw new Error(start.error || 'Gagal memulai analisa');
+
+    const t0 = Date.now();
+    while (Date.now() - t0 < 5 * 60 * 1000) {
+      await new Promise(r => setTimeout(r, 3000));
+      let st;
+      try { st = await apiFetch('/api/analyze?symbol=' + encodeURIComponent(sym)); }
+      catch { continue; }                 // gangguan sesaat -> coba lagi
+      if (st.running) continue;
+      if (st.analysis) renderAIReport(st.analysis, body);
+      else body.innerHTML = `<div class="empty" style="color:var(--red)">Error: ${escHtml(st.error || 'Analisa gagal')}</div>`;
+      return;
+    }
+    body.innerHTML = '<div class="empty" style="color:var(--red)">Timeout menunggu hasil. Cek Bot Logs.</div>';
   } catch (e) {
-    document.getElementById('ai-result-body').innerHTML = `<div class="empty" style="color:var(--red)">Gagal: ${e.message}</div>`;
+    body.innerHTML = `<div class="empty" style="color:var(--red)">Gagal: ${escHtml(e.message)}</div>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Analyze';
   }
-  btn.disabled = false;
-  btn.textContent = 'Analyze';
 }
 
 function triggerAnalyze(symbol) {
@@ -1020,20 +1135,20 @@ async function loadHistory() {
       const c  = t.pnlUsdt >= 0 ? 'green' : 'red';
       const rm = REASON_MAP[t.reason] || ['•', t.reason || '—'];
       return `<tr>
-        <td><b>${escHtml(t.symbol)}</b></td>
-        <td>${fmtPx(t.entryPrice)}</td>
-        <td>${fmtPx(t.exitPrice)}</td>
-        <td style="color:var(--${c})">${fmtSigned(t.pnlPct)}%</td>
-        <td style="color:var(--${c})">${fmtSigned(t.pnlUsdt)} USDT</td>
-        <td style="color:var(--muted)">${Number(t.fee).toFixed(4)} USDT</td>
-        <td>${rm[0]} ${escHtml(rm[1])}${t.manual ? ' <span class="badge gray">tidak dihitung</span>' : ''}</td>
-        <td style="font-size:11px">${timeLabel(t.closedAt)}</td>
+        <td class="c-title"><b>${escHtml(t.symbol)}</b></td>
+        <td data-label="Entry">${fmtPx(t.entryPrice)}</td>
+        <td data-label="Exit">${fmtPx(t.exitPrice)}</td>
+        <td data-label="PnL %" style="color:var(--${c})">${fmtSigned(t.pnlPct)}%</td>
+        <td data-label="PnL USDT" style="color:var(--${c})">${fmtSigned(t.pnlUsdt)} USDT</td>
+        <td data-label="Fee" style="color:var(--muted)">${Number(t.fee).toFixed(4)} USDT</td>
+        <td data-label="Alasan">${rm[0]} ${escHtml(rm[1])}${t.manual ? ' <span class="badge gray">tidak dihitung</span>' : ''}</td>
+        <td data-label="Waktu" style="font-size:11px">${timeLabel(t.closedAt)}</td>
       </tr>`;
     }).join('');
 
     html.push(`<tr id="pnl-d-${key}" style="display:${open ? 'table-row' : 'none'}">
       <td colspan="4" style="padding:0;background:var(--bg)">
-        <table class="tbl">
+        <table class="tbl cards">
           <thead><tr><th>Symbol</th><th>Avg</th><th>Exit</th><th>PnL%</th><th>PnL USDT (net fee)</th><th>Fee</th><th>Reason</th><th>Waktu</th></tr></thead>
           <tbody>${rows}</tbody>
         </table>
@@ -1172,7 +1287,18 @@ async function saveWhitelist() {
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 document.addEventListener('click', e => { if (e.target.classList.contains('modal-bg')) closeModal(e.target.id); });
 
+function toggleNav() {
+  document.getElementById('sidenav').classList.toggle('open');
+  document.getElementById('navBackdrop').classList.toggle('show');
+}
+function closeNav() {
+  document.getElementById('sidenav')?.classList.remove('open');
+  document.getElementById('navBackdrop')?.classList.remove('show');
+}
+
 function showPage(name) {
+  closeNav();
+  const _c = document.getElementById('content'); if (_c) _c.scrollTop = 0;
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-' + name)?.classList.add('active');

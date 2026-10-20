@@ -28,6 +28,9 @@ export function setApiCallbacks(cb) { _callbacks = cb; }
 let _rankRunning = false;
 let _rankError   = null;
 
+// State analisa on-demand (background, dashboard polling)
+const _analyses = new Map(); // symbol -> { running, analysis, error }
+
 function json(res, data, status = 200) {
   res.writeHead(status, {
     'Content-Type':                'application/json',
@@ -344,15 +347,36 @@ async function handle(req, res) {
     return;
   }
 
-  // ── POST /api/analyze ──────────────────────────────────────────────────────
+  // ── POST /api/analyze — mulai analisa di background ────────────────────────
   if (route === '/api/analyze' && method === 'POST') {
     const { symbol } = await readBody(req);
     if (!symbol) { err(res, 'symbol required'); return; }
     if (!isAIEnabled()) { err(res, `AI tidak aktif. Set OPENROUTER_API_KEY, GEMINI_API_KEY, atau ANTHROPIC_API_KEY di .env sesuai AI_PROVIDER, lalu restart bot.`); return; }
-    try {
-      const analysis = await analyzeOnDemand(symbol.toUpperCase());
-      json(res, { ok: true, symbol, analysis });
-    } catch (e) { err(res, e.message); }
+
+    const sym = symbol.toUpperCase();
+    if (!_analyses.get(sym)?.running) {
+      _analyses.set(sym, { running: true, analysis: null, error: null });
+      analyzeOnDemand(sym)
+        .then(a => _analyses.set(sym, {
+          running: false, analysis: a,
+          error: a ? null : 'Analisa AI kosong/gagal (cek Bot Logs)',
+        }))
+        .catch(e => _analyses.set(sym, { running: false, analysis: null, error: e.message }));
+    }
+    json(res, { ok: true, running: true, symbol: sym });
+    return;
+  }
+
+  // ── GET /api/analyze?symbol=XXX — cek hasil analisa ────────────────────────
+  if (route === '/api/analyze' && method === 'GET') {
+    const sym = (url.searchParams.get('symbol') || '').toUpperCase();
+    const st  = _analyses.get(sym);
+    json(res, {
+      ok: true, symbol: sym,
+      running:  st?.running ?? false,
+      analysis: st?.analysis ?? null,
+      error:    st?.error ?? (st ? null : 'Belum ada analisa untuk symbol ini'),
+    });
     return;
   }
 
