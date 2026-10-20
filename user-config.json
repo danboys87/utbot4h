@@ -34,7 +34,7 @@
     "minScore": 60,
     "allowWait": false,
     "failOpen": false,
-    "researchDelayMs": 10000
+    "researchDelayMs": 20000
   },
   "management": {
     "stopLossPct": -5,
