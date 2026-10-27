@@ -25,7 +25,12 @@
       "checkIntervalMin": 240,
       "minVolume24h": 1000000,
       "maxSignalsPerRun": 5,
-      "offsetMin": 1
+      "offsetMin": 1,
+      "filters": {
+        "adx": { "enabled": true, "period": 14, "min": 22, "requirePlusDI": false },
+        "ema": { "enabled": true, "period": 50 },
+        "maxRisk": { "enabled": true, "maxPct": 8 }
+      }
     }
   },
   "ai": {

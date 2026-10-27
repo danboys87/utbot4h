@@ -3,15 +3,17 @@
  *
  * Mendeteksi sinyal BUY dan SELL dari ATR Trailing Stop crossover di timeframe 4H.
  *
- * BUY  : close crosses ABOVE trailing stop
+ * BUY  : close crosses ABOVE trailing stop  (+ lolos filter ADX / EMA)
  * SELL : close crosses BELOW trailing stop (dipakai untuk exit posisi yang sudah open)
  *
  * v4.1: koin dengan posisi terbuka SELALU di-scan lebih dulu (tidak kena filter volume),
  *       dan SELL untuk posisi terbuka tidak di-dedupe.
+ * v4.4: filter untuk BUY (ADX 4H, close > EMA, maxRisk jarak SL), diatur di user-config.json
+ *       → screening.utbot.filters. SELL tidak pernah difilter.
  */
 
 import { getCandles, getAllTickers } from './bitget.js';
-import { calcUTBot }                 from './indicators.js';
+import { calcUTBot, calcADX, calcEMA } from './indicators.js';
 import { config }                    from './config.js';
 import { log }                       from './logger.js';
 import { hasPosition, getOpenSymbols } from './state.js';
@@ -25,6 +27,39 @@ function signalKey(symbol, signal, tf, timestamp) {
   return `${symbol}_${signal}_${tf}_${timestamp}`;
 }
 
+// ── Filter rezim (khusus BUY) ─────────────────────────────────────────────────
+// Return string alasan penolakan, atau null bila lolos.
+function checkBuyFilters(highs, lows, closes, f = {}, trailingStop = null) {
+  const close = closes[closes.length - 1];
+
+  // Jarak risiko: dari close ke SL (trailing stop UT Bot - buffer). Terlalu lebar → tolak.
+  if (f.maxRisk?.enabled && trailingStop) {
+    const buf     = config.management?.slBuffer ?? 0.005;
+    const sl      = trailingStop * (1 - buf);
+    const riskPct = (close - sl) / close * 100;
+    const max     = f.maxRisk.maxPct ?? 8;
+    if (riskPct > max) return `risiko ${riskPct.toFixed(1)}% > ${max}% (SL ${sl.toFixed(6)})`;
+  }
+
+  if (f.adx?.enabled) {
+    const a = calcADX(highs, lows, closes, f.adx.period ?? 14);
+    if (!a) return 'ADX tidak bisa dihitung (data kurang)';
+    const min = f.adx.min ?? 20;
+    if (a.adx < min) return `ADX ${a.adx.toFixed(1)} < ${min}`;
+    if (f.adx.requirePlusDI === true && a.plusDI <= a.minusDI)
+      return `+DI ${a.plusDI.toFixed(1)} <= -DI ${a.minusDI.toFixed(1)}`;
+  }
+
+  if (f.ema?.enabled) {
+    const p = f.ema.period ?? 50;
+    const e = calcEMA(closes, p);
+    if (e === null) return `data kurang untuk EMA${p}`;
+    if (close <= e) return `close ${close} <= EMA${p} ${e.toFixed(6)}`;
+  }
+
+  return null;
+}
+
 // ── Scan 4H untuk satu symbol ─────────────────────────────────────────────────
 async function scanSymbol4H(symbol, cfg, _retry = 0) {
   const { keyValue, atrPeriod } = cfg;
@@ -34,7 +69,8 @@ async function scanSymbol4H(symbol, cfg, _retry = 0) {
   const periodMs  = 14400000;   // 4 jam
 
   try {
-    const candleLimit = Math.max(atrPeriod * 8, 80); // atrPeriod=10 → 80 candle ≈ 13 hari
+    // 300 candle ≈ 50 hari: cukup untuk EMA200, ADX, dan trailing stop yang path-dependent
+    const candleLimit = Math.max(atrPeriod * 8, 300);
     const raw         = await getCandles(symbol, API_TF, candleLimit);
     if (!Array.isArray(raw) || raw.length < atrPeriod + 10) return null;
 
@@ -53,6 +89,15 @@ async function scanSymbol4H(symbol, cfg, _retry = 0) {
 
     const result = calcUTBot(highs, lows, closes, keyValue, atrPeriod);
     if (!result || !result.signal) return null;
+
+    // ── Filter rezim (hanya BUY) ──
+    if (result.signal === 'BUY') {
+      const reject = checkBuyFilters(highs, lows, closes, cfg.filters, result.trailingStop);
+      if (reject) {
+        log('utbot', `  ⛔ ${symbol} BUY ditolak filter: ${reject}`);
+        return null;
+      }
+    }
 
     // Deduplikasi per sinyal
     // SELL untuk posisi terbuka tidak boleh di-dedupe (harus selalu bisa memicu exit)
@@ -135,8 +180,15 @@ export async function runUTBotScreener(tickersOrSymbols, opts = {}) {
   const maxSignals = opts.maxSignals        ?? utCfg.maxSignalsPerRun ?? 10;
   const quoteAsset = config.trading.quoteAsset || 'USDT';
   const mode       = opts.mode ?? 'all'; // 'buy_only' | 'sell_only' | 'all'
+  const filters    = utCfg.filters ?? {};
 
-  log('utbot', `══ UT Bot Alert Screener (4H | key=${keyValue} atr=${atrPeriod} | mode=${mode}) ══`);
+  const fDesc = [
+    filters.adx?.enabled ? `ADX>${filters.adx.min ?? 20}` : null,
+    filters.ema?.enabled ? `close>EMA${filters.ema.period ?? 50}` : null,
+    filters.maxRisk?.enabled ? `risiko<=${filters.maxRisk.maxPct ?? 8}%` : null,
+  ].filter(Boolean).join(' + ') || 'tanpa filter';
+
+  log('utbot', `══ UT Bot Alert Screener (4H | key=${keyValue} atr=${atrPeriod} | mode=${mode} | filter BUY: ${fDesc}) ══`);
 
   const tickers       = Array.isArray(tickersOrSymbols) ? tickersOrSymbols : [];
   const cryptoTickers = await filterCryptoOnly(tickers);
@@ -165,7 +217,7 @@ export async function runUTBotScreener(tickersOrSymbols, opts = {}) {
   for (let i = 0; i < scanList.length; i++) {
     const coin   = scanList[i];
     const before = Date.now();
-    const result = await scanSymbol4H(coin.symbol, { keyValue, atrPeriod });
+    const result = await scanSymbol4H(coin.symbol, { keyValue, atrPeriod, filters });
     const elapsed = Date.now() - before;
 
     if (elapsed > 20000) {

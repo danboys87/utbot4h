@@ -250,22 +250,22 @@ export function calcUTBot(highs, lows, closes, keyValue = 1, atrPeriod = 10) {
   stops[startIdx] = closes[startIdx] - atrArr[startIdx] * keyValue;
 
   for (let i = startIdx + 1; i < closes.length; i++) {
-  const atr = atrArr[i];
-  if (!atr) { stops[i] = stops[i - 1]; continue; }
+    const atr = atrArr[i];
+    if (!atr) { stops[i] = stops[i - 1]; continue; }
 
-  const nLoss     = atr * keyValue;
-  const close     = closes[i];
-  const prevClose = closes[i - 1];
-  const prevStop  = stops[i - 1] ?? (close - nLoss);
+    const nLoss     = atr * keyValue;
+    const close     = closes[i];
+    const prevClose = closes[i - 1];
+    const prevStop  = stops[i - 1] ?? (close - nLoss);
 
-  if (close > prevStop && prevClose > prevStop) {
-    stops[i] = Math.max(prevStop, close - nLoss);
-  } else if (close < prevStop && prevClose < prevStop) {
-    stops[i] = Math.min(prevStop, close + nLoss);
-  } else {
-    stops[i] = close > prevStop ? close - nLoss : close + nLoss;
+    if (close > prevStop && prevClose > prevStop) {
+      stops[i] = Math.max(prevStop, close - nLoss);
+    } else if (close < prevStop && prevClose < prevStop) {
+      stops[i] = Math.min(prevStop, close + nLoss);
+    } else {
+      stops[i] = close > prevStop ? close - nLoss : close + nLoss;
+    }
   }
-}
 
   const lastIdx  = closes.length - 1;
   const prevIdx  = closes.length - 2;
@@ -290,4 +290,68 @@ export function calcUTBot(highs, lows, closes, keyValue = 1, atrPeriod = 10) {
     prevClose,
     nLoss: atr * keyValue,
   };
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// BARU — versi "seri" (nilai per candle), dipakai backtest.js
+// ═════════════════════════════════════════════════════════════════════════════
+
+/** EMA per candle (null sebelum data cukup) */
+export function calcEMASeries(closes, period) {
+  const out = new Array(closes.length).fill(null);
+  if (closes.length < period) return out;
+  const k = 2 / (period + 1);
+  let ema = closes.slice(0, period).reduce((a, b) => a + b, 0) / period;
+  out[period - 1] = ema;
+  for (let i = period; i < closes.length; i++) {
+    ema = closes[i] * k + ema * (1 - k);
+    out[i] = ema;
+  }
+  return out;
+}
+
+/** ADX per candle — algoritma sama dengan calcADX (Wilder) */
+export function calcADXSeries(highs, lows, closes, period = 14) {
+  const n   = highs.length;
+  const res = {
+    adx:     new Array(n).fill(null),
+    plusDI:  new Array(n).fill(null),
+    minusDI: new Array(n).fill(null),
+  };
+  if (n < period * 2 + 1) return res;
+
+  const tr = [], pdm = [], mdm = [];
+  for (let i = 1; i < n; i++) {
+    const up   = highs[i] - highs[i - 1];
+    const down = lows[i - 1] - lows[i];
+    pdm.push(up > down && up > 0 ? up : 0);
+    mdm.push(down > up && down > 0 ? down : 0);
+    tr.push(Math.max(
+      highs[i] - lows[i],
+      Math.abs(highs[i] - closes[i - 1]),
+      Math.abs(lows[i]  - closes[i - 1])
+    ));
+  }
+
+  let sTR = 0, sP = 0, sM = 0;
+  for (let k = 0; k < period; k++) { sTR += tr[k]; sP += pdm[k]; sM += mdm[k]; }
+
+  const dx = [];
+  for (let k = period; k < tr.length; k++) {
+    sTR = sTR - sTR / period + tr[k];
+    sP  = sP  - sP  / period + pdm[k];
+    sM  = sM  - sM  / period + mdm[k];
+
+    const pDI = sTR > 0 ? (sP / sTR) * 100 : 0;
+    const mDI = sTR > 0 ? (sM / sTR) * 100 : 0;
+    const d   = (pDI + mDI) > 0 ? Math.abs(pDI - mDI) / (pDI + mDI) * 100 : 0;
+    dx.push(d);
+
+    const ci = k + 1;                       // tr[k] = candle ke k+1
+    res.plusDI[ci]  = pDI;
+    res.minusDI[ci] = mDI;
+    if (dx.length === period)      res.adx[ci] = dx.reduce((a, b) => a + b, 0) / period;
+    else if (dx.length > period)   res.adx[ci] = (res.adx[ci - 1] * (period - 1) + d) / period;
+  }
+  return res;
 }
