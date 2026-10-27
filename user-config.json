@@ -27,10 +27,10 @@
       "maxSignalsPerRun": 5,
       "offsetMin": 1,
       "filters": {
-        "adx": { "enabled": true, "period": 14, "min": 22, "requirePlusDI": false },
-        "ema": { "enabled": true, "period": 50 },
-        "maxRisk": { "enabled": true, "maxPct": 8 }
-      }
+  "adx":     { "enabled": false, "period": 14, "min": 25, "requirePlusDI": false },
+  "ema":     { "enabled": false, "period": 50 },
+  "maxRisk": { "enabled": false, "maxPct": 10 }
+}
     }
   },
   "ai": {
