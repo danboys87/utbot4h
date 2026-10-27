@@ -16,14 +16,14 @@
   },
   "whitelist": [],
   "screening": {
-    "minVolume24h": 1000000,
+    "minVolume24h": 3000000,
     "utbot": {
       "enabled": true,
       "keyValue": 2,
       "atrPeriod": 10,
       "timeframe": "4h",
       "checkIntervalMin": 240,
-      "minVolume24h": 1000000,
+      "minVolume24h": 3000000,
       "maxSignalsPerRun": 5,
       "offsetMin": 1,
       "filters": {
