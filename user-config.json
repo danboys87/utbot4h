@@ -28,7 +28,7 @@
       "offsetMin": 1,
       "filters": {
   "adx":     { "enabled": false, "period": 14, "min": 25, "requirePlusDI": false },
-  "ema":     { "enabled": false, "period": 50 },
+  "ema":     { "enabled": true, "period": 50 },
   "maxRisk": { "enabled": false, "maxPct": 10 }
 }
     }
